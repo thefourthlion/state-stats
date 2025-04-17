@@ -8,7 +8,10 @@ import json
 from time import sleep
 
 # Configuration
-API_URL = "http://localhost:3002/api/States/create"
+BASE_URL = "http://localhost:3002/api"
+CREATE_URL = f"{BASE_URL}/States/create"
+GET_ALL_URL = f"{BASE_URL}/States"
+UPDATE_URL = f"{BASE_URL}/States/update"
 EXCEL_DIR = "./data"  # Directory containing Excel files
 REQUIRED_FIELDS = [
     "MedianHomePrice", "CapitalGainsTax", "IncomeTax", "SalesTax", 
@@ -27,7 +30,7 @@ STATE_DATA = {
     "Colorado": {"name": "Colorado", "MedianHomePrice": "539151.00", "CapitalGainsTax": "4.40", "IncomeTax": "4.40", "Abortion": "A", "CostOfLiving": "102.0", "K12SchoolPerformance": "17", "HigherEdPerformance": "28", "ForestCoverage": "34.42", "GunLaws": "A-", "MinimumWage": "14.81", "Population": "5782171", "PropertyTax": "0.51", "SalesTax": "7.83", "ViolentCrime": "474.0", "PoliticalLeaning": "Light Blue"},
     "Connecticut": {"name": "Connecticut", "MedianHomePrice": "384244.00", "CapitalGainsTax": "6.99", "IncomeTax": "6.99", "Abortion": "A", "CostOfLiving": "112.3", "K12SchoolPerformance": "18", "HigherEdPerformance": "24", "ForestCoverage": "55.24", "GunLaws": "A", "MinimumWage": "16.35", "Population": "3608298", "PropertyTax": "1.73", "SalesTax": "6.35", "ViolentCrime": "150.2", "PoliticalLeaning": "Dark Blue"},
     "Delaware": {"name": "Delaware", "MedianHomePrice": "374252.00", "CapitalGainsTax": "6.60", "IncomeTax": "6.60", "Abortion": "A", "CostOfLiving": "100.8", "K12SchoolPerformance": "38", "HigherEdPerformance": "17", "ForestCoverage": "27.26", "GunLaws": "A-", "MinimumWage": "15.00", "Population": "990837", "PropertyTax": "0.59", "SalesTax": "0.00", "ViolentCrime": "380.2", "PoliticalLeaning": "Dark Blue"},
-    "District of Columbia": {"name": "District of Columbia", "MedianHomePrice": "610548.00", "CapitalGainsTax": "10.75", "IncomeTax": "10.75", "Abortion": "A", "CostOfLiving": "141.9", "K12SchoolPerformance": "34", "HigherEdPerformance": "42", "ForestCoverage": "33.90", "MinimumWage": "17.50", "Population": "705749", "PropertyTax": "0.56", "SalesTax": "6.00", "ViolentCrime": "1150.9", "PoliticalLeaning": "Dark Blue"},
+    "District of Columbia": {"name": "District of Columbia", "MedianHomePrice": "610548.00", "CapitalGainsTax": "10.75", "IncomeTax": "10.75", "Abortion": "A", "CostOfLiving": "141.9", "K12SchoolPerformance": "34", "HigherEdPerformance": "42", "ForestCoverage": "33.90", "GunLaws": "A", "MinimumWage": "17.50", "Population": "705749", "PropertyTax": "0.56", "SalesTax": "6.00", "ViolentCrime": "1150.9", "PoliticalLeaning": "Dark Blue"},
     "Florida": {"name": "Florida", "MedianHomePrice": "392306.00", "CapitalGainsTax": "0.00", "IncomeTax": "0.00", "Abortion": "C", "CostOfLiving": "102.8", "K12SchoolPerformance": "37", "HigherEdPerformance": "1", "ForestCoverage": "50.68", "GunLaws": "C-", "MinimumWage": "13.00", "Population": "21570527", "PropertyTax": "0.86", "SalesTax": "7.04", "ViolentCrime": "290.2", "PoliticalLeaning": "Light Red"},
     "Georgia": {"name": "Georgia", "MedianHomePrice": "321821.00", "CapitalGainsTax": "5.39", "IncomeTax": "5.49", "Abortion": "C", "CostOfLiving": "91.3", "K12SchoolPerformance": "36", "HigherEdPerformance": "3", "ForestCoverage": "67.28", "GunLaws": "F", "MinimumWage": "5.15", "Population": "10725274", "PropertyTax": "0.91", "SalesTax": "7.41", "ViolentCrime": "351.8", "PoliticalLeaning": "Purple"},
     "Hawaii": {"name": "Hawaii", "MedianHomePrice": "839013.00", "CapitalGainsTax": "7.25", "IncomeTax": "11.00", "Abortion": "A", "CostOfLiving": "186.9", "K12SchoolPerformance": "24", "HigherEdPerformance": "20", "ForestCoverage": "42.53", "GunLaws": "A-", "MinimumWage": "14.00", "Population": "1460137", "PropertyTax": "0.31", "SalesTax": "4.44", "ViolentCrime": "187.1", "PoliticalLeaning": "Dark Blue"},
@@ -72,8 +75,6 @@ STATE_DATA = {
     "Wyoming": {"name": "Wyoming", "MedianHomePrice": "334782.00", "CapitalGainsTax": "0.00", "IncomeTax": "0.00", "Abortion": "F", "CostOfLiving": "95.5", "K12SchoolPerformance": "6", "HigherEdPerformance": "14", "ForestCoverage": "18.42", "GunLaws": "F", "MinimumWage": "5.15", "Population": "577719", "PropertyTax": "0.61", "SalesTax": "5.43", "ViolentCrime": "191.1", "PoliticalLeaning": "Dark Red"}
 }
 
-# Note: I'm excluding "United States" as it's not a state or territory
-
 def validate_data(data):
     """Validate that all required fields are present in the data."""
     missing_fields = [field for field in REQUIRED_FIELDS if field not in data]
@@ -105,7 +106,7 @@ def process_excel_file(file_path):
             
             # Send data to API
             try:
-                response = requests.post(API_URL, json=data)
+                response = requests.post(CREATE_URL, json=data)
                 if response.status_code == 200:
                     success_count += 1
                 else:
@@ -127,37 +128,78 @@ def process_excel_file(file_path):
         print(f"Error processing file {file_path}: {str(e)}")
 
 def send_state_data_to_api():
-    """Send state data to the MongoDB API"""
+    """Send state data to the MongoDB API, skipping states that already exist"""
     print("Sending state data to API...")
     
     success_count = 0
+    skip_count = 0
     error_count = 0
     
-    # Iterate through all states in the STATE_DATA dictionary
+    # Field mapping from your data to MongoDB model fields
+    field_mapping = {
+        "name": "Name",  # Case difference
+        "PropertyTax": "PropertyTaxes",
+        "HigherEdPerformance": "HigherEdSchoolPerformance",
+        "ForestCoverage": "ForestedLand",
+        "ViolentCrime": "ViolentCrimes",
+        # Add other mappings as needed
+    }
+    
+    # First, try to get all existing states from the database
+    existing_states = set()
+    try:
+        response = requests.get(GET_ALL_URL)
+        if response.status_code == 200:
+            states_list = response.json()
+            for state in states_list:
+                existing_states.add(state["Name"])
+            print(f"Found {len(existing_states)} existing states in database")
+        else:
+            print(f"Failed to get existing states: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"Error getting existing states: {str(e)}")
+    
+    # Process each state
     for state_key, state_data in STATE_DATA.items():
         try:
-            print(f"Sending data for {state_key}...")
+            # Create a new dictionary with the correct field names
+            mapped_data = {}
+            for key, value in state_data.items():
+                if key in field_mapping:
+                    mapped_data[field_mapping[key]] = value
+                else:
+                    mapped_data[key] = value
             
-            # Send POST request to the API
-            response = requests.post(API_URL, json=state_data)
+            # Check if this state already exists
+            state_name = mapped_data.get("Name")
+            if state_name in existing_states:
+                # State exists, skip it
+                print(f"State {state_name} already exists, skipping...")
+                skip_count += 1
+                continue
             
-            # Check if successful
-            if response.status_code == 200 or response.status_code == 201:
-                print(f"Successfully added data for {state_key}")
+            # State doesn't exist, create new
+            print(f"Creating new state {state_name}...")
+            response = requests.post(CREATE_URL, json=mapped_data)
+            
+            # Check response
+            if response.status_code in [200, 201, 204]:
+                print(f"Successfully added {state_name}")
                 success_count += 1
             else:
-                print(f"API Error for {state_key}: {response.status_code} - {response.text}")
+                print(f"API Error for {state_name}: {response.status_code} - {response.text}")
                 error_count += 1
             
             # Small delay to avoid overwhelming the server
             sleep(0.1)
             
-        except requests.RequestException as e:
-            print(f"Request error for {state_key}: {str(e)}")
+        except Exception as e:
+            print(f"Error processing {state_key}: {str(e)}")
             error_count += 1
     
-    print(f"Processed {success_count + error_count} states:")
-    print(f"  - {success_count} successful")
+    print(f"Processed {success_count + skip_count + error_count} states:")
+    print(f"  - {success_count} successfully added")
+    print(f"  - {skip_count} skipped (already exist)")
     print(f"  - {error_count} failed")
 
 def main():
