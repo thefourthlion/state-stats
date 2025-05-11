@@ -27,7 +27,7 @@ exports.createStates = async (req, res) => {
 };
 exports.readStates = async (req, res) => {
   const page = req.query.page || 0;
-  const limit = req.query.limit || 25;
+  const limit = req.query.limit || 55;
   try {
     const result = await States.find({})
       .sort()

@@ -46,8 +46,8 @@ const Moving = () => {
   const [preferences, setPreferences] = useState<UserPreferences>({
     fromState: "",
     toState: "",
-    income: 75000,
-    houseValue: 300000,
+    income: 105000,
+    houseValue: 200000,
     minimumWagePreference: "high",
     abortionStance: "pro-choice",
     gunStance: "pro-2A",
