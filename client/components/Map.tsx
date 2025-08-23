@@ -3,7 +3,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { feature } from "topojson-client";
-// @ts-expect-error - us-atlas exports JSON; TS may need "resolveJsonModule": true
 import usTopo from "us-atlas/states-10m.json";
 import "../styles/Map.scss";
 
@@ -79,9 +78,10 @@ const Map = () => {
   // TopoJSON -> GeoJSON
   const geoStates = useMemo(() => {
     // usTopo.objects.states contains features with properties: { name, abbr? }
-    // us-atlas states-10m uses FIPS IDs; we’ll rely on properties.name for joins.
-    // Some builds don’t ship "name" — fallback to mapping by postal abbr via a helper if needed.
-    return feature(usTopo as any, (usTopo as any).objects.states).features as any[];
+    // us-atlas states-10m uses FIPS IDs; we'll rely on properties.name for joins.
+    // Some builds don't ship "name" — fallback to mapping by postal abbr via a helper if needed.
+    const geoJson = feature(usTopo as any, (usTopo as any).objects.states);
+    return geoJson ? [geoJson] : [];
   }, []);
 
   // Fast lookup by state name (your dataset uses full names)
