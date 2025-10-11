@@ -62,7 +62,7 @@ const Moving = () => {
   const fetchStates = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:3002/api/states/read");
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/states/read`);
       setStates(response.data);
 
       // Set default states if available
