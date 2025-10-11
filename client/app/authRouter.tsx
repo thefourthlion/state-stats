@@ -1,10 +1,9 @@
-
 "use client";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { initFirebase } from "@/firebase";
 import { User, getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { initFirebase } from "@/firebase";
 
 const LOGIN_ROUTE = "/pages/login";
 

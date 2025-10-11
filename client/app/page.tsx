@@ -1,13 +1,35 @@
-import { title } from "@/components/primitives";
-import Map from "../components/Map";
-export default function Home() {
-  return (
-    <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
-        <div className="inline-block max-w-xl text-center justify-center">
-        <Map />
-      </div>
+import { Metadata } from "next";
+import Landing from "../components/Landing";
 
-    
-    </section>
-  );
+export const metadata: Metadata = {
+  title: "Home",
+  description:
+    "Compare all 50 US states across taxes, cost of living, politics, education, and more. Make smarter state decisions with data-driven insights and interactive tools.",
+  keywords: [
+    "compare states",
+    "US states comparison",
+    "state data",
+    "moving calculator",
+    "state rankings",
+    "cost of living by state",
+    "state taxes comparison",
+    "best states to live",
+  ],
+  openGraph: {
+    title: "State Analytica - Make Smarter State Decisions",
+    description:
+      "Compare all 50 US states across taxes, cost of living, politics, education, and more. Find your perfect state with data-driven insights.",
+    url: "https://stateanalytica.com",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "State Analytica - Make Smarter State Decisions",
+    description:
+      "Compare all 50 US states across taxes, cost of living, politics, and education.",
+  },
+};
+
+export default function Home() {
+  return <Landing />;
 }

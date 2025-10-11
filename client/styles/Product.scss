@@ -1,5 +1,3 @@
-@import "./Variables.scss";
-
 .Product {
   display: flex;
   flex-direction: column;
@@ -21,7 +19,7 @@
     width: 300px;
     min-height: 400px;
     padding: 15px;
-    border: 1px solid $border-color !important;
+    border: 1px solid hsl(var(--nextui-default-300)) !important;
     display: flex;
     flex-direction: column;
     align-items: center;

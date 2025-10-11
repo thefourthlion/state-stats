@@ -4,7 +4,6 @@ import axios from "axios";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { feature } from "topojson-client";
 import usTopo from "us-atlas/states-10m.json";
-import "../styles/Map.scss";
 
 interface State {
   _id: string;
@@ -27,29 +26,77 @@ interface State {
 }
 
 const NAME_BY_ABBR: Record<string, string> = {
-  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
-  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
-  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
-  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
-  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri",
-  MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey",
-  NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio",
-  OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
-  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
-  VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
-  DC: "District of Columbia"
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+  DC: "District of Columbia",
 };
 
 const getPoliticalColor = (leaning: string): string => {
   switch (leaning) {
-    case "Dark Blue": return "#0d47a1";
-    case "Blue": return "#0d47a1";
-    case "Light Blue": return "#29b6f6";
-    case "Purple": return "#673ab7";
-    case "Light Red": return "#ef5350";
-    case "Red": return "#b71c1c";
-    case "Dark Red": return "#b71c1c";
-    default: return "#D3D3D3";
+    case "Dark Blue":
+      return "#0d47a1";
+    case "Blue":
+      return "#0d47a1";
+    case "Light Blue":
+      return "#29b6f6";
+    case "Purple":
+      return "#673ab7";
+    case "Light Red":
+      return "#ef5350";
+    case "Red":
+      return "#b71c1c";
+    case "Dark Red":
+      return "#b71c1c";
+    default:
+      return "#D3D3D3";
   }
 };
 
@@ -60,7 +107,12 @@ const formatValue = (key: string, value: string): string => {
       maximumFractionDigits: 0,
     }).format(parseFloat(value));
   }
-  if (key === "IncomeTax" || key === "SalesTax" || key === "PropertyTaxes" || key === "CapitalGainsTax") {
+  if (
+    key === "IncomeTax" ||
+    key === "SalesTax" ||
+    key === "PropertyTaxes" ||
+    key === "CapitalGainsTax"
+  ) {
     return `${value}%`;
   }
   if (key === "MinimumWage" && value !== "No state law") {
@@ -85,27 +137,31 @@ const Map = () => {
   }, []);
 
   // Fast lookup by state name (your dataset uses full names)
-const byName = useMemo(() => {
-  const idx = new globalThis.Map<string, State>();
-  for (const s of states) idx.set(s.Name, s);
-  return idx;
-}, [states]);
+  const byName = useMemo(() => {
+    const idx = new globalThis.Map<string, State>();
+    for (const s of states) idx.set(s.Name, s);
+    return idx;
+  }, [states]);
 
   // Optional: if you prefer joining by postal abbreviation, create a second index
-const byAbbr = useMemo(() => {
-  const idx = new globalThis.Map<string, State>();
-  for (const s of states) {
-    const abbr = Object.entries(NAME_BY_ABBR).find(([, n]) => n === s.Name)?.[0];
-    if (abbr) idx.set(abbr, s);
-  }
-  return idx;
-}, [states]);
+  const byAbbr = useMemo(() => {
+    const idx = new globalThis.Map<string, State>();
+    for (const s of states) {
+      const abbr = Object.entries(NAME_BY_ABBR).find(
+        ([, n]) => n === s.Name,
+      )?.[0];
+      if (abbr) idx.set(abbr, s);
+    }
+    return idx;
+  }, [states]);
 
   useEffect(() => {
     const fetchStates = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/states/read`);
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/states/read`,
+        );
         setStates(response.data);
         setLoading(false);
       } catch (err) {
@@ -134,14 +190,23 @@ const byAbbr = useMemo(() => {
   };
 
   return (
-    <div className="Map">
-      <div className="container">
-        {loading && <div className="loading">Loading map data...</div>}
-        {error && <div className="error">{error}</div>}
+    <div className="w-full flex justify-center items-center">
+      <div className="w-full max-w-7xl">
+        {loading && (
+          <div className="text-center p-8 text-default-600 dark:text-default-400 font-medium">
+            Loading map data...
+          </div>
+        )}
+        {error && (
+          <div className="text-center p-8 text-pastel-red font-medium">
+            {error}
+          </div>
+        )}
 
         {!loading && !error && (
-          <div className="map-container">
-            <div className="us-map">
+          <div className="relative mb-8">
+            {/* Map Container */}
+            <div className="w-full max-w-4xl mx-auto relative">
               <ComposableMap projection="geoAlbersUsa">
                 <Geographies geography={geoStates}>
                   {({ geographies }) =>
@@ -160,12 +225,16 @@ const byAbbr = useMemo(() => {
 
                       return (
                         <Geography
-                          key={geo.rsmKey}
                           geography={geo}
+                          key={geo.rsmKey}
                           onClick={() => handleClick(geo)}
                           style={{
                             default: { outline: "none", fill },
-                            hover: { outline: "none", opacity: 0.9 },
+                            hover: {
+                              outline: "none",
+                              opacity: 0.9,
+                              cursor: "pointer",
+                            },
                             pressed: { outline: "none", opacity: 0.85 },
                           }}
                         />
@@ -176,21 +245,29 @@ const byAbbr = useMemo(() => {
               </ComposableMap>
             </div>
 
-            <div className="map-legend">
-              <h4>Political Leaning</h4>
-              <div className="legend-items">
+            {/* Legend */}
+            <div className="rounded-2xl bg-default-100 dark:bg-default-50/5 border border-default-200 dark:border-default-100 p-6 mt-6">
+              <h4 className="text-lg font-bold text-default-700 dark:text-default-300 mb-4">
+                Political Leaning
+              </h4>
+              <div className="flex flex-wrap gap-4">
                 {[
-                  ["dark-blue", "Dark Blue"],
-                  ["blue", "Blue"],
-                  ["light-blue", "Light Blue"],
-                  ["purple", "Purple"],
-                  ["light-red", "Light Red"],
-                  ["red", "Red"],
-                  ["dark-red", "Dark Red"],
-                ].map(([cls, label]) => (
-                  <div className="legend-item" key={cls}>
-                    <div className={`color-box ${cls}`}></div>
-                    <span>{label}</span>
+                  ["#0d47a1", "Dark Blue"],
+                  ["#1976d2", "Blue"],
+                  ["#29b6f6", "Light Blue"],
+                  ["#673ab7", "Purple"],
+                  ["#ef5350", "Light Red"],
+                  ["#d32f2f", "Red"],
+                  ["#b71c1c", "Dark Red"],
+                ].map(([color, label]) => (
+                  <div className="flex items-center gap-2" key={label}>
+                    <div
+                      className="w-4 h-4 rounded border border-default-300"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="text-sm text-default-600 dark:text-default-400">
+                      {label}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -198,35 +275,138 @@ const byAbbr = useMemo(() => {
           </div>
         )}
 
+        {/* State Details */}
         {selectedState && (
-          <div className="state-details">
-            <h2>{selectedState.Name}</h2>
-            <div className="details-grid">
-              <div className="detail-card">
-                <h3>Economic</h3>
-                <p>Median Home: <strong>${formatValue("MedianHomePrice", selectedState.MedianHomePrice)}</strong></p>
-                <p>Income Tax: <strong>{formatValue("IncomeTax", selectedState.IncomeTax)}</strong></p>
-                <p>Sales Tax: <strong>{formatValue("SalesTax", selectedState.SalesTax)}</strong></p>
-                <p>Property Tax: <strong>{formatValue("PropertyTaxes", selectedState.PropertyTaxes)}</strong></p>
-                <p>Cost of Living: <strong>{selectedState.CostOfLiving}</strong></p>
-                <p>Minimum Wage: <strong>{formatValue("MinimumWage", selectedState.MinimumWage)}</strong></p>
+          <div className="rounded-2xl bg-default-100 dark:bg-default-50/5 border border-pastel-teal/30 p-8 mt-6 shadow-lg">
+            <h2 className="text-3xl font-black text-center mb-6 text-pastel-teal">
+              {selectedState.Name}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Economic Card */}
+              <div className="p-6 rounded-xl bg-default-50 dark:bg-default-100/5 border border-default-200 dark:border-default-100">
+                <h3 className="text-xl font-bold text-pastel-blue mb-4 pb-3 border-b border-default-300">
+                  Economic
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Median Home:</span>{" "}
+                    <strong className="text-foreground">
+                      $
+                      {formatValue(
+                        "MedianHomePrice",
+                        selectedState.MedianHomePrice,
+                      )}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Income Tax:</span>{" "}
+                    <strong className="text-foreground">
+                      {formatValue("IncomeTax", selectedState.IncomeTax)}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Sales Tax:</span>{" "}
+                    <strong className="text-foreground">
+                      {formatValue("SalesTax", selectedState.SalesTax)}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Property Tax:</span>{" "}
+                    <strong className="text-foreground">
+                      {formatValue(
+                        "PropertyTaxes",
+                        selectedState.PropertyTaxes,
+                      )}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Cost of Living:</span>{" "}
+                    <strong className="text-foreground">
+                      {selectedState.CostOfLiving}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Minimum Wage:</span>{" "}
+                    <strong className="text-foreground">
+                      {formatValue("MinimumWage", selectedState.MinimumWage)}
+                    </strong>
+                  </p>
+                </div>
               </div>
-              <div className="detail-card">
-                <h3>Social & Political</h3>
-                <p>Political Leaning: <strong>{selectedState.PoliticalLeaning}</strong></p>
-                <p>Abortion Laws: <strong>{selectedState.Abortion}</strong></p>
-                <p>Gun Laws: <strong>{selectedState.GunLaws}</strong></p>
+
+              {/* Social & Political Card */}
+              <div className="p-6 rounded-xl bg-default-50 dark:bg-default-100/5 border border-default-200 dark:border-default-100">
+                <h3 className="text-xl font-bold text-pastel-pink mb-4 pb-3 border-b border-default-300">
+                  Social & Political
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Political Leaning:</span>{" "}
+                    <strong className="text-foreground">
+                      {selectedState.PoliticalLeaning}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Abortion Laws:</span>{" "}
+                    <strong className="text-foreground">
+                      {selectedState.Abortion}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Gun Laws:</span>{" "}
+                    <strong className="text-foreground">
+                      {selectedState.GunLaws}
+                    </strong>
+                  </p>
+                </div>
               </div>
-              <div className="detail-card">
-                <h3>Demographics & Environment</h3>
-                <p>Population: <strong>{formatValue("Population", selectedState.Population)}</strong></p>
-                <p>Violent Crimes: <strong>{selectedState.ViolentCrimes}</strong></p>
-                <p>Forested Land: <strong>{selectedState.ForestedLand}%</strong></p>
+
+              {/* Demographics & Environment Card */}
+              <div className="p-6 rounded-xl bg-default-50 dark:bg-default-100/5 border border-default-200 dark:border-default-100">
+                <h3 className="text-xl font-bold text-pastel-orange mb-4 pb-3 border-b border-default-300">
+                  Demographics
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Population:</span>{" "}
+                    <strong className="text-foreground">
+                      {formatValue("Population", selectedState.Population)}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Violent Crimes:</span>{" "}
+                    <strong className="text-foreground">
+                      {selectedState.ViolentCrimes}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Forested Land:</span>{" "}
+                    <strong className="text-foreground">
+                      {selectedState.ForestedLand}%
+                    </strong>
+                  </p>
+                </div>
               </div>
-              <div className="detail-card">
-                <h3>Education</h3>
-                <p>K-12 Rank: <strong>#{selectedState.K12SchoolPerformance}</strong></p>
-                <p>Higher Ed Rank: <strong>#{selectedState.HigherEdSchoolPerformance}</strong></p>
+
+              {/* Education Card */}
+              <div className="p-6 rounded-xl bg-default-50 dark:bg-default-100/5 border border-default-200 dark:border-default-100">
+                <h3 className="text-xl font-bold text-pastel-green mb-4 pb-3 border-b border-default-300">
+                  Education
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">K-12 Rank:</span>{" "}
+                    <strong className="text-foreground">
+                      #{selectedState.K12SchoolPerformance}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Higher Ed Rank:</span>{" "}
+                    <strong className="text-foreground">
+                      #{selectedState.HigherEdSchoolPerformance}
+                    </strong>
+                  </p>
+                </div>
               </div>
             </div>
           </div>

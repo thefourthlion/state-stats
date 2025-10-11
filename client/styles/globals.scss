@@ -1,120 +1,80 @@
-@import "./Variables.scss";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @import url("https://fonts.googleapis.com/css2?family=Sofia+Sans:ital,wght@0,100..1000;1,100..1000&display=swap");
 
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: "Sofia Sans", sans-serif;
-  font-weight: 600 !important;
-  h1 {
-    font-weight: bold;
-    font-size: 2.5rem;
-  }
-
-  h2 {
-    font-weight: bold;
-    font-size: 2rem;
-  }
-
-  h3 {
-    font-weight: bold;
-    font-size: 1.75rem;
-  }
-
-  h4 {
-    font-weight: bold;
-    font-size: 1.5rem;
+@layer base {
+  body {
+    font-family: "Sofia Sans", sans-serif;
+    @apply bg-background text-foreground;
   }
 }
 
-.page {
-  margin-bottom: 50px;
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+@layer components {
+  /* Page Layout */
+  .page {
+    @apply mb-12;
   }
-}
+  
+  .page .container {
+    @apply flex flex-col items-center justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
 
-.content-header {
-  font-weight: bold;
-  margin: 25px 0;
-}
+  .content-header {
+    @apply text-3xl sm:text-4xl font-bold my-6 text-center;
+  }
 
-.u-link{
-  text-decoration: underline;
-}
+  .content-body {
+    @apply w-full;
+  }
 
-// ----------------------------------------------- buttons -----------------------------------------
-.primary-btn,
-.red-button,
-.green-button
- {
-  width: 100%;
-  cursor: pointer;
-  position: relative;
-  text-decoration: none;
-  overflow: hidden;
-  z-index: 1;
-}
+  /* Universal Card Styles */
+  .card {
+    @apply rounded-2xl bg-default-100 dark:bg-default-50/5 border border-default-200 dark:border-default-100 p-6 transition-all duration-300;
+  }
 
-.social-sign-in-btn{
-  width: 100% !important;
-  position: relative;
-  right: 6px;
-}
+  .card-hover {
+    @apply hover:border-pastel-teal hover:shadow-lg hover:shadow-pastel-teal/20 hover:-translate-y-1;
+  }
 
-.red-button {
-  background-color: $pastel-red;
-  border: 3px solid $pastel-red;
-}
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-gradient-primary text-white font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-all;
+  }
 
-.red-button:hover {
-  background-color: $pastel-red-dark;
-  border: 3px solid $pastel-red-dark;
-}
+  .btn-secondary {
+    @apply border-2 border-pastel-teal text-pastel-teal hover:bg-pastel-teal/10 font-semibold px-6 py-3 rounded-lg transition-all;
+  }
 
-.red-outline-button {
-  background-color: transparent;
-  border: 3px solid $pastel-red;
-  color: $pastel-red;
-}
+  .btn-danger {
+    @apply bg-pastel-red text-white border-2 border-pastel-red hover:bg-pastel-red-dark hover:border-pastel-red-dark font-semibold px-6 py-3 rounded-lg transition-all;
+  }
 
-.red-outline-button:hover {
-  background-color: transparent;
-  border: 3px solid $pastel-red-dark;
-  color: $pastel-red-dark;
-}
+  .btn-success {
+    @apply bg-pastel-green text-white border-2 border-pastel-green hover:bg-pastel-green-dark hover:border-pastel-green-dark font-semibold px-6 py-3 rounded-lg transition-all;
+  }
 
-.green-button {
-  background-color: $pastel-green;
-  border: 3px solid $pastel-green;
-}
+  /* Form Styles */
+  .form-input {
+    @apply w-full px-4 py-3 rounded-lg border border-default-300 dark:border-default-200 bg-default-100 dark:bg-default-50/5 focus:outline-none focus:ring-2 focus:ring-pastel-teal transition-all;
+  }
 
-.green-button:hover {
-  background-color: $pastel-green-dark;
-  border: 3px solid $pastel-green-dark;
-}
+  .form-label {
+    @apply block text-sm font-semibold mb-2 text-default-700 dark:text-default-300;
+  }
 
-.content-container {
-  min-width: 350px;
-  max-width: 550px;
-  padding: 30px;
-}
+  /* Utility Classes */
+  .gradient-text {
+    @apply bg-gradient-hero bg-clip-text text-transparent;
+  }
 
-.button-link {
-  text-decoration: none;
-  color: black !important;
+  .section-title {
+    @apply text-3xl sm:text-4xl font-black mb-4;
+  }
+
+  .section-subtitle {
+    @apply text-lg text-default-600 dark:text-default-400;
+  }
 }
 

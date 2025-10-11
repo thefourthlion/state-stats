@@ -1,0 +1,23 @@
+{
+  "name": "State Analytica",
+  "short_name": "StateAnalytica",
+  "description": "Compare US states for moving, taxation, cost of living, and political factors",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#78BFB8",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}
+

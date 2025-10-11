@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "../styles/Moving.scss";
 
 // Reuse the State interface
 interface State {
@@ -62,16 +61,18 @@ const Moving = () => {
   const fetchStates = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/states/read`);
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/states/read`,
+      );
       setStates(response.data);
 
       // Set default states if available
       if (response.data.length > 0) {
         const californiaIndex = response.data.findIndex(
-          (state: State) => state.Name === "California"
+          (state: State) => state.Name === "California",
         );
         const texasIndex = response.data.findIndex(
-          (state: State) => state.Name === "Texas"
+          (state: State) => state.Name === "Texas",
         );
 
         setPreferences((prev) => ({
@@ -96,7 +97,7 @@ const Moving = () => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
   ) => {
     const { name, value, type } = e.target;
 
@@ -139,7 +140,7 @@ const Moving = () => {
   const getResultClass = (
     category: string,
     fromValue: any,
-    toValue: any
+    toValue: any,
   ): string => {
     if (category === "abortion") {
       const fromGrade = getGradeValue(fromValue);
@@ -285,272 +286,525 @@ const Moving = () => {
     const taxImpact = calculateTaxImpact();
 
     return (
-      <div className="results-container">
-        <h2>
-          Moving from {fromState.Name} to {toState.Name}
-        </h2>
-
-        <div className="financial-impact">
-          <h3>Financial Impact (Annual)</h3>
-          <div
-            className={`impact-item ${taxImpact.incomeTax > 0 ? "positive" : "negative"}`}
-          >
-            <span>Income Tax Impact:</span>
-            <span>{formatCurrency(taxImpact.incomeTax)}</span>
-          </div>
-          <div
-            className={`impact-item ${taxImpact.salesTax > 0 ? "positive" : "negative"}`}
-          >
-            <span>Sales Tax Impact:</span>
-            <span>{formatCurrency(taxImpact.salesTax)}</span>
-          </div>
-          <div
-            className={`impact-item ${taxImpact.propertyTax > 0 ? "positive" : "negative"}`}
-          >
-            <span>Property Tax Impact:</span>
-            <span>{formatCurrency(taxImpact.propertyTax)}</span>
-          </div>
-          <div
-            className={`impact-item ${taxImpact.costOfLiving > 0 ? "positive" : "negative"}`}
-          >
-            <span>Cost of Living Impact:</span>
-            <span>{formatCurrency(taxImpact.costOfLiving)}</span>
-          </div>
-          <div
-            className={`impact-total ${taxImpact.total > 0 ? "positive" : "negative"}`}
-          >
-            <span>Total Annual Impact:</span>
-            <span>{formatCurrency(taxImpact.total)}</span>
-          </div>
-          {taxImpact.total > 0 ? (
-            <p className="impact-summary positive">
-              You'll save approximately {formatCurrency(taxImpact.total)} per
-              year by moving to {toState.Name}.
-            </p>
-          ) : (
-            <p className="impact-summary negative">
-              It will cost you approximately{" "}
-              {formatCurrency(Math.abs(taxImpact.total))} more per year to live
-              in {toState.Name}.
-            </p>
-          )}
+      <div className="space-y-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-black mb-2">
+            Moving from{" "}
+            <span className="text-pastel-teal">{fromState.Name}</span> to{" "}
+            <span className="text-pastel-blue">{toState.Name}</span>
+          </h2>
         </div>
 
-        <div className="preferences-comparison">
-          <h3>Your Preferences</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Factor</th>
-                <th>{fromState.Name}</th>
-                <th>{toState.Name}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                className={getResultClass(
-                  "abortion",
-                  fromState.Abortion,
-                  toState.Abortion
-                )}
-              >
-                <td>
-                  Abortion Laws{" "}
-                  {preferences.abortionStance === "pro-choice"
-                    ? "(Pro-Choice)"
-                    : "(Pro-Life)"}
-                </td>
-                <td>{fromState.Abortion}</td>
-                <td>{toState.Abortion}</td>
-              </tr>
-              <tr
-                className={getResultClass(
-                  "gunLaws",
-                  fromState.GunLaws,
-                  toState.GunLaws
-                )}
-              >
-                <td>
-                  Gun Laws{" "}
-                  {preferences.gunStance === "pro-2A"
-                    ? "(Pro-2A)"
-                    : "(Pro-Gun Laws)"}
-                </td>
-                <td>{fromState.GunLaws}</td>
-                <td>{toState.GunLaws}</td>
-              </tr>
-              <tr
-                className={getResultClass(
-                  "politicalLeaning",
-                  fromState.PoliticalLeaning,
-                  toState.PoliticalLeaning
-                )}
-              >
-                <td>
-                  Political Leaning{" "}
-                  {preferences.politicalPreference === "red"
-                    ? "(Red)"
-                    : "(Blue)"}
-                </td>
-                <td>{fromState.PoliticalLeaning}</td>
-                <td>{toState.PoliticalLeaning}</td>
-              </tr>
-              <tr
-                className={getResultClass(
-                  "minimumWage",
-                  fromState.MinimumWage,
-                  toState.MinimumWage
-                )}
-              >
-                <td>
-                  Minimum Wage{" "}
-                  {preferences.minimumWagePreference === "high"
-                    ? "(Higher Better)"
-                    : "(Lower Better)"}
-                </td>
-                <td>${fromState.MinimumWage}</td>
-                <td>${toState.MinimumWage}</td>
-              </tr>
-              <tr
-                className={getResultClass(
-                  "population",
-                  fromState.Population,
-                  toState.Population
-                )}
-              >
-                <td>
-                  Population{" "}
-                  {preferences.populationPreference === "small-town"
-                    ? "(Small Town)"
-                    : "(City Life)"}
-                </td>
-                <td>{parseInt(fromState.Population).toLocaleString()}</td>
-                <td>{parseInt(toState.Population).toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td>Cost of Living Index</td>
-                <td>{fromState.CostOfLiving}</td>
-                <td
-                  className={
-                    parseFloat(toState.CostOfLiving) <
-                    parseFloat(fromState.CostOfLiving)
-                      ? "better-result"
-                      : "worse-result"
-                  }
+        {/* Financial Impact Section */}
+        <div className="rounded-2xl bg-default-100 dark:bg-default-50/5 border border-default-200 dark:border-default-100 p-8 shadow-lg">
+          <h3 className="text-2xl font-bold text-pastel-teal mb-6">
+            Financial Impact (Annual)
+          </h3>
+          <div className="space-y-4">
+            <div
+              className={`flex justify-between items-center p-4 rounded-lg ${
+                taxImpact.incomeTax > 0
+                  ? "bg-pastel-green/10 text-pastel-green-dark"
+                  : "bg-pastel-red/10 text-pastel-red-dark"
+              }`}
+            >
+              <span className="font-semibold">Income Tax Impact:</span>
+              <span className="font-bold text-lg">
+                {formatCurrency(taxImpact.incomeTax)}
+              </span>
+            </div>
+            <div
+              className={`flex justify-between items-center p-4 rounded-lg ${
+                taxImpact.salesTax > 0
+                  ? "bg-pastel-green/10 text-pastel-green-dark"
+                  : "bg-pastel-red/10 text-pastel-red-dark"
+              }`}
+            >
+              <span className="font-semibold">Sales Tax Impact:</span>
+              <span className="font-bold text-lg">
+                {formatCurrency(taxImpact.salesTax)}
+              </span>
+            </div>
+            <div
+              className={`flex justify-between items-center p-4 rounded-lg ${
+                taxImpact.propertyTax > 0
+                  ? "bg-pastel-green/10 text-pastel-green-dark"
+                  : "bg-pastel-red/10 text-pastel-red-dark"
+              }`}
+            >
+              <span className="font-semibold">Property Tax Impact:</span>
+              <span className="font-bold text-lg">
+                {formatCurrency(taxImpact.propertyTax)}
+              </span>
+            </div>
+            <div
+              className={`flex justify-between items-center p-4 rounded-lg ${
+                taxImpact.costOfLiving > 0
+                  ? "bg-pastel-green/10 text-pastel-green-dark"
+                  : "bg-pastel-red/10 text-pastel-red-dark"
+              }`}
+            >
+              <span className="font-semibold">Cost of Living Impact:</span>
+              <span className="font-bold text-lg">
+                {formatCurrency(taxImpact.costOfLiving)}
+              </span>
+            </div>
+            <div
+              className={`flex justify-between items-center p-6 rounded-lg border-2 ${
+                taxImpact.total > 0
+                  ? "bg-pastel-green/20 border-pastel-green text-pastel-green-dark"
+                  : "bg-pastel-red/20 border-pastel-red text-pastel-red-dark"
+              }`}
+            >
+              <span className="font-bold text-lg">Total Annual Impact:</span>
+              <span className="font-black text-2xl">
+                {formatCurrency(taxImpact.total)}
+              </span>
+            </div>
+            {taxImpact.total > 0 ? (
+              <p className="text-center p-4 rounded-lg bg-pastel-green/10 text-pastel-green-dark font-semibold">
+                You&apos;ll save approximately {formatCurrency(taxImpact.total)}{" "}
+                per year by moving to {toState.Name}! 🎉
+              </p>
+            ) : (
+              <p className="text-center p-4 rounded-lg bg-pastel-red/10 text-pastel-red-dark font-semibold">
+                It will cost you approximately{" "}
+                {formatCurrency(Math.abs(taxImpact.total))} more per year to
+                live in {toState.Name}.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Preferences Comparison */}
+        <div className="rounded-2xl bg-default-100 dark:bg-default-50/5 border border-default-200 dark:border-default-100 overflow-hidden shadow-lg">
+          <div className="p-6 bg-default-50 dark:bg-default-100/5 border-b border-default-200 dark:border-default-100">
+            <h3 className="text-2xl font-bold text-pastel-blue">
+              Detailed Comparison
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead className="bg-default-50 dark:bg-default-100/10">
+                <tr>
+                  <th className="px-6 py-4 text-left font-bold text-default-700 dark:text-default-300 border-b-2 border-default-300">
+                    Factor
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold text-pastel-teal border-b-2 border-default-300">
+                    {fromState.Name}
+                  </th>
+                  <th className="px-6 py-4 text-left font-bold text-pastel-blue border-b-2 border-default-300">
+                    {toState.Name}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  className={`hover:bg-default-100 dark:hover:bg-default-50/5 ${
+                    getResultClass(
+                      "abortion",
+                      fromState.Abortion,
+                      toState.Abortion,
+                    ) === "better-result"
+                      ? "bg-pastel-green/5"
+                      : getResultClass(
+                            "abortion",
+                            fromState.Abortion,
+                            toState.Abortion,
+                          ) === "worse-result"
+                        ? "bg-pastel-red/5"
+                        : ""
+                  }`}
                 >
-                  {toState.CostOfLiving}
-                </td>
-              </tr>
-              <tr>
-                <td>Income Tax Rate</td>
-                <td>{fromState.IncomeTax}%</td>
-                <td
-                  className={
-                    parseFloat(toState.IncomeTax) <=
-                    parseFloat(fromState.IncomeTax)
-                      ? "better-result"
-                      : "worse-result"
-                  }
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Abortion Laws{" "}
+                    <span className="text-sm text-default-500">
+                      {preferences.abortionStance === "pro-choice"
+                        ? "(Pro-Choice)"
+                        : "(Pro-Life)"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    {fromState.Abortion}
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      getResultClass(
+                        "abortion",
+                        fromState.Abortion,
+                        toState.Abortion,
+                      ) === "better-result"
+                        ? "text-pastel-green-dark"
+                        : getResultClass(
+                              "abortion",
+                              fromState.Abortion,
+                              toState.Abortion,
+                            ) === "worse-result"
+                          ? "text-pastel-red-dark"
+                          : ""
+                    }`}
+                  >
+                    {toState.Abortion}
+                  </td>
+                </tr>
+                <tr
+                  className={`hover:bg-default-100 dark:hover:bg-default-50/5 ${
+                    getResultClass(
+                      "gunLaws",
+                      fromState.GunLaws,
+                      toState.GunLaws,
+                    ) === "better-result"
+                      ? "bg-pastel-green/5"
+                      : getResultClass(
+                            "gunLaws",
+                            fromState.GunLaws,
+                            toState.GunLaws,
+                          ) === "worse-result"
+                        ? "bg-pastel-red/5"
+                        : ""
+                  }`}
                 >
-                  {toState.IncomeTax}%
-                </td>
-              </tr>
-              <tr>
-                <td>Sales Tax</td>
-                <td>{fromState.SalesTax}%</td>
-                <td
-                  className={
-                    parseFloat(toState.SalesTax) <=
-                    parseFloat(fromState.SalesTax)
-                      ? "better-result"
-                      : "worse-result"
-                  }
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Gun Laws{" "}
+                    <span className="text-sm text-default-500">
+                      {preferences.gunStance === "pro-2A"
+                        ? "(Pro-2A)"
+                        : "(Pro-Gun Laws)"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    {fromState.GunLaws}
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      getResultClass(
+                        "gunLaws",
+                        fromState.GunLaws,
+                        toState.GunLaws,
+                      ) === "better-result"
+                        ? "text-pastel-green-dark"
+                        : getResultClass(
+                              "gunLaws",
+                              fromState.GunLaws,
+                              toState.GunLaws,
+                            ) === "worse-result"
+                          ? "text-pastel-red-dark"
+                          : ""
+                    }`}
+                  >
+                    {toState.GunLaws}
+                  </td>
+                </tr>
+                <tr
+                  className={`hover:bg-default-100 dark:hover:bg-default-50/5 ${
+                    getResultClass(
+                      "politicalLeaning",
+                      fromState.PoliticalLeaning,
+                      toState.PoliticalLeaning,
+                    ) === "better-result"
+                      ? "bg-pastel-green/5"
+                      : getResultClass(
+                            "politicalLeaning",
+                            fromState.PoliticalLeaning,
+                            toState.PoliticalLeaning,
+                          ) === "worse-result"
+                        ? "bg-pastel-red/5"
+                        : ""
+                  }`}
                 >
-                  {toState.SalesTax}%
-                </td>
-              </tr>
-              <tr>
-                <td>Property Tax Rate</td>
-                <td>{fromState.PropertyTaxes}%</td>
-                <td
-                  className={
-                    parseFloat(toState.PropertyTaxes) <=
-                    parseFloat(fromState.PropertyTaxes)
-                      ? "better-result"
-                      : "worse-result"
-                  }
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Political Leaning{" "}
+                    <span className="text-sm text-default-500">
+                      {preferences.politicalPreference === "red"
+                        ? "(Red)"
+                        : "(Blue)"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    {fromState.PoliticalLeaning}
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      getResultClass(
+                        "politicalLeaning",
+                        fromState.PoliticalLeaning,
+                        toState.PoliticalLeaning,
+                      ) === "better-result"
+                        ? "text-pastel-green-dark"
+                        : getResultClass(
+                              "politicalLeaning",
+                              fromState.PoliticalLeaning,
+                              toState.PoliticalLeaning,
+                            ) === "worse-result"
+                          ? "text-pastel-red-dark"
+                          : ""
+                    }`}
+                  >
+                    {toState.PoliticalLeaning}
+                  </td>
+                </tr>
+                <tr
+                  className={`hover:bg-default-100 dark:hover:bg-default-50/5 ${
+                    getResultClass(
+                      "minimumWage",
+                      fromState.MinimumWage,
+                      toState.MinimumWage,
+                    ) === "better-result"
+                      ? "bg-pastel-green/5"
+                      : getResultClass(
+                            "minimumWage",
+                            fromState.MinimumWage,
+                            toState.MinimumWage,
+                          ) === "worse-result"
+                        ? "bg-pastel-red/5"
+                        : ""
+                  }`}
                 >
-                  {toState.PropertyTaxes}%
-                </td>
-              </tr>
-              <tr>
-                <td>K-12 School Ranking</td>
-                <td>#{fromState.K12SchoolPerformance}</td>
-                <td
-                  className={
-                    parseInt(toState.K12SchoolPerformance) <=
-                    parseInt(fromState.K12SchoolPerformance)
-                      ? "better-result"
-                      : "worse-result"
-                  }
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Minimum Wage{" "}
+                    <span className="text-sm text-default-500">
+                      {preferences.minimumWagePreference === "high"
+                        ? "(Higher Better)"
+                        : "(Lower Better)"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    ${fromState.MinimumWage}
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      getResultClass(
+                        "minimumWage",
+                        fromState.MinimumWage,
+                        toState.MinimumWage,
+                      ) === "better-result"
+                        ? "text-pastel-green-dark"
+                        : getResultClass(
+                              "minimumWage",
+                              fromState.MinimumWage,
+                              toState.MinimumWage,
+                            ) === "worse-result"
+                          ? "text-pastel-red-dark"
+                          : ""
+                    }`}
+                  >
+                    ${toState.MinimumWage}
+                  </td>
+                </tr>
+                <tr
+                  className={`hover:bg-default-100 dark:hover:bg-default-50/5 ${
+                    getResultClass(
+                      "population",
+                      fromState.Population,
+                      toState.Population,
+                    ) === "better-result"
+                      ? "bg-pastel-green/5"
+                      : getResultClass(
+                            "population",
+                            fromState.Population,
+                            toState.Population,
+                          ) === "worse-result"
+                        ? "bg-pastel-red/5"
+                        : ""
+                  }`}
                 >
-                  #{toState.K12SchoolPerformance}
-                </td>
-              </tr>
-              <tr>
-                <td>Higher Ed Ranking</td>
-                <td>#{fromState.HigherEdSchoolPerformance}</td>
-                <td
-                  className={
-                    parseInt(toState.HigherEdSchoolPerformance) <=
-                    parseInt(fromState.HigherEdSchoolPerformance)
-                      ? "better-result"
-                      : "worse-result"
-                  }
-                >
-                  #{toState.HigherEdSchoolPerformance}
-                </td>
-              </tr>
-              <tr>
-                <td>Violent Crime Rate</td>
-                <td>{fromState.ViolentCrimes}</td>
-                <td
-                  className={
-                    parseFloat(toState.ViolentCrimes) <=
-                    parseFloat(fromState.ViolentCrimes)
-                      ? "better-result"
-                      : "worse-result"
-                  }
-                >
-                  {toState.ViolentCrimes}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Population{" "}
+                    <span className="text-sm text-default-500">
+                      {preferences.populationPreference === "small-town"
+                        ? "(Small Town)"
+                        : "(City Life)"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    {parseInt(fromState.Population).toLocaleString()}
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      getResultClass(
+                        "population",
+                        fromState.Population,
+                        toState.Population,
+                      ) === "better-result"
+                        ? "text-pastel-green-dark"
+                        : getResultClass(
+                              "population",
+                              fromState.Population,
+                              toState.Population,
+                            ) === "worse-result"
+                          ? "text-pastel-red-dark"
+                          : ""
+                    }`}
+                  >
+                    {parseInt(toState.Population).toLocaleString()}
+                  </td>
+                </tr>
+                <tr className="hover:bg-default-100 dark:hover:bg-default-50/5">
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Cost of Living Index
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    {fromState.CostOfLiving}
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      parseFloat(toState.CostOfLiving) <
+                      parseFloat(fromState.CostOfLiving)
+                        ? "text-pastel-green-dark"
+                        : "text-pastel-red-dark"
+                    }`}
+                  >
+                    {toState.CostOfLiving}
+                  </td>
+                </tr>
+                <tr className="hover:bg-default-100 dark:hover:bg-default-50/5">
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Income Tax Rate
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    {fromState.IncomeTax}%
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      parseFloat(toState.IncomeTax) <=
+                      parseFloat(fromState.IncomeTax)
+                        ? "text-pastel-green-dark"
+                        : "text-pastel-red-dark"
+                    }`}
+                  >
+                    {toState.IncomeTax}%
+                  </td>
+                </tr>
+                <tr className="hover:bg-default-100 dark:hover:bg-default-50/5">
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Sales Tax
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    {fromState.SalesTax}%
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      parseFloat(toState.SalesTax) <=
+                      parseFloat(fromState.SalesTax)
+                        ? "text-pastel-green-dark"
+                        : "text-pastel-red-dark"
+                    }`}
+                  >
+                    {toState.SalesTax}%
+                  </td>
+                </tr>
+                <tr className="hover:bg-default-100 dark:hover:bg-default-50/5">
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Property Tax Rate
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    {fromState.PropertyTaxes}%
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      parseFloat(toState.PropertyTaxes) <=
+                      parseFloat(fromState.PropertyTaxes)
+                        ? "text-pastel-green-dark"
+                        : "text-pastel-red-dark"
+                    }`}
+                  >
+                    {toState.PropertyTaxes}%
+                  </td>
+                </tr>
+                <tr className="hover:bg-default-100 dark:hover:bg-default-50/5">
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    K-12 School Ranking
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    #{fromState.K12SchoolPerformance}
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      parseInt(toState.K12SchoolPerformance) <=
+                      parseInt(fromState.K12SchoolPerformance)
+                        ? "text-pastel-green-dark"
+                        : "text-pastel-red-dark"
+                    }`}
+                  >
+                    #{toState.K12SchoolPerformance}
+                  </td>
+                </tr>
+                <tr className="hover:bg-default-100 dark:hover:bg-default-50/5">
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300 border-b border-default-200 dark:border-default-100">
+                    Higher Ed Ranking
+                  </td>
+                  <td className="px-6 py-4 border-b border-default-200 dark:border-default-100">
+                    #{fromState.HigherEdSchoolPerformance}
+                  </td>
+                  <td
+                    className={`px-6 py-4 border-b border-default-200 dark:border-default-100 font-semibold ${
+                      parseInt(toState.HigherEdSchoolPerformance) <=
+                      parseInt(fromState.HigherEdSchoolPerformance)
+                        ? "text-pastel-green-dark"
+                        : "text-pastel-red-dark"
+                    }`}
+                  >
+                    #{toState.HigherEdSchoolPerformance}
+                  </td>
+                </tr>
+                <tr className="hover:bg-default-100 dark:hover:bg-default-50/5">
+                  <td className="px-6 py-4 font-semibold text-default-700 dark:text-default-300">
+                    Violent Crime Rate
+                  </td>
+                  <td className="px-6 py-4">{fromState.ViolentCrimes}</td>
+                  <td
+                    className={`px-6 py-4 font-semibold ${
+                      parseFloat(toState.ViolentCrimes) <=
+                      parseFloat(fromState.ViolentCrimes)
+                        ? "text-pastel-green-dark"
+                        : "text-pastel-red-dark"
+                    }`}
+                  >
+                    {toState.ViolentCrimes}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="Moving">
-      <div className="container">
-
-        {loading && <p>Loading state data...</p>}
-        {error && <p className="error">{error}</p>}
+    <div className="w-full">
+      <div className="max-w-7xl mx-auto">
+        {loading && (
+          <p className="text-center p-8 text-default-600 dark:text-default-400">
+            Loading state data...
+          </p>
+        )}
+        {error && (
+          <p className="text-center p-8 text-pastel-red font-medium">{error}</p>
+        )}
 
         {!loading && !error && (
           <>
-            <form onSubmit={handleSubmit} className="preferences-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="fromState">Moving From:</label>
+            <form
+              className="rounded-2xl bg-default-100 dark:bg-default-50/5 border border-default-200 dark:border-default-100 p-8 shadow-lg mb-8"
+              onSubmit={handleSubmit}
+            >
+              {/* State Selection */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label
+                    className="block text-sm font-bold text-default-700 dark:text-default-300 mb-2"
+                    htmlFor="fromState"
+                  >
+                    Moving From:
+                  </label>
                   <select
+                    className="w-full px-4 py-3 rounded-lg border-2 border-default-300 dark:border-default-200 bg-background text-foreground font-semibold cursor-pointer hover:border-pastel-teal focus:outline-none focus:ring-2 focus:ring-pastel-teal transition-all"
                     id="fromState"
                     name="fromState"
-                    value={preferences.fromState}
                     onChange={handleChange}
                     required
+                    value={preferences.fromState}
                   >
                     {states.map((state) => (
                       <option key={`from-${state._id}`} value={state.Name}>
@@ -560,14 +814,20 @@ const Moving = () => {
                   </select>
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="toState">Moving To:</label>
+                <div>
+                  <label
+                    className="block text-sm font-bold text-default-700 dark:text-default-300 mb-2"
+                    htmlFor="toState"
+                  >
+                    Moving To:
+                  </label>
                   <select
+                    className="w-full px-4 py-3 rounded-lg border-2 border-default-300 dark:border-default-200 bg-background text-foreground font-semibold cursor-pointer hover:border-pastel-teal focus:outline-none focus:ring-2 focus:ring-pastel-teal transition-all"
                     id="toState"
                     name="toState"
-                    value={preferences.toState}
                     onChange={handleChange}
                     required
+                    value={preferences.toState}
                   >
                     {states.map((state) => (
                       <option key={`to-${state._id}`} value={state.Name}>
@@ -578,241 +838,287 @@ const Moving = () => {
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="income">Annual Income:</label>
-                  <div className="input-with-prefix">
-                    <span className="input-prefix">$</span>
+              {/* Financial Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label
+                    className="block text-sm font-bold text-default-700 dark:text-default-300 mb-2"
+                    htmlFor="income"
+                  >
+                    Annual Income:
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-default-600 dark:text-default-400 font-bold">
+                      $
+                    </span>
                     <input
-                      type="number"
+                      className="w-full pl-8 pr-4 py-3 rounded-lg border-2 border-default-300 dark:border-default-200 bg-background text-foreground font-semibold hover:border-pastel-teal focus:outline-none focus:ring-2 focus:ring-pastel-teal transition-all"
                       id="income"
+                      min="0"
                       name="income"
-                      value={preferences.income}
                       onChange={handleChange}
-                      min="0"
+                      required
                       step="1000"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="houseValue">Ideal House Value:</label>
-                  <div className="input-with-prefix">
-                    <span className="input-prefix">$</span>
-                    <input
                       type="number"
+                      value={preferences.income}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    className="block text-sm font-bold text-default-700 dark:text-default-300 mb-2"
+                    htmlFor="houseValue"
+                  >
+                    Ideal House Value:
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-default-600 dark:text-default-400 font-bold">
+                      $
+                    </span>
+                    <input
+                      className="w-full pl-8 pr-4 py-3 rounded-lg border-2 border-default-300 dark:border-default-200 bg-background text-foreground font-semibold hover:border-pastel-teal focus:outline-none focus:ring-2 focus:ring-pastel-teal transition-all"
                       id="houseValue"
-                      name="houseValue"
-                      value={preferences.houseValue}
-                      onChange={handleChange}
                       min="0"
-                      step="10000"
+                      name="houseValue"
+                      onChange={handleChange}
                       required
+                      step="10000"
+                      type="number"
+                      value={preferences.houseValue}
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="form-row preferences-row">
-                <div className="preference-group">
-                  <span className="preference-label">Minimum Wage:</span>
-                  <div className="preference-options">
-                    <label
-                      className={
-                        preferences.minimumWagePreference === "high"
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="minimumWagePreference"
-                        value="high"
-                        checked={preferences.minimumWagePreference === "high"}
-                        onChange={handleChange}
-                      />
-                      Prefer Higher
-                    </label>
-                    <label
-                      className={
-                        preferences.minimumWagePreference === "low"
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="minimumWagePreference"
-                        value="low"
-                        checked={preferences.minimumWagePreference === "low"}
-                        onChange={handleChange}
-                      />
-                      Prefer Lower
-                    </label>
+              {/* Preferences Section */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Minimum Wage */}
+                  <div>
+                    <span className="block text-sm font-bold text-default-700 dark:text-default-300 mb-3">
+                      Minimum Wage:
+                    </span>
+                    <div className="flex gap-3">
+                      <label
+                        className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          preferences.minimumWagePreference === "high"
+                            ? "border-pastel-teal bg-pastel-teal/10 text-pastel-teal font-bold"
+                            : "border-default-300 dark:border-default-200 hover:border-pastel-teal"
+                        }`}
+                      >
+                        <input
+                          checked={preferences.minimumWagePreference === "high"}
+                          className="sr-only"
+                          name="minimumWagePreference"
+                          onChange={handleChange}
+                          type="radio"
+                          value="high"
+                        />
+                        <span className="text-center block">Prefer Higher</span>
+                      </label>
+                      <label
+                        className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          preferences.minimumWagePreference === "low"
+                            ? "border-pastel-teal bg-pastel-teal/10 text-pastel-teal font-bold"
+                            : "border-default-300 dark:border-default-200 hover:border-pastel-teal"
+                        }`}
+                      >
+                        <input
+                          checked={preferences.minimumWagePreference === "low"}
+                          className="sr-only"
+                          name="minimumWagePreference"
+                          onChange={handleChange}
+                          type="radio"
+                          value="low"
+                        />
+                        <span className="text-center block">Prefer Lower</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Abortion Stance */}
+                  <div>
+                    <span className="block text-sm font-bold text-default-700 dark:text-default-300 mb-3">
+                      Abortion Stance:
+                    </span>
+                    <div className="flex gap-3">
+                      <label
+                        className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          preferences.abortionStance === "pro-choice"
+                            ? "border-pastel-blue bg-pastel-blue/10 text-pastel-blue font-bold"
+                            : "border-default-300 dark:border-default-200 hover:border-pastel-blue"
+                        }`}
+                      >
+                        <input
+                          checked={preferences.abortionStance === "pro-choice"}
+                          className="sr-only"
+                          name="abortionStance"
+                          onChange={handleChange}
+                          type="radio"
+                          value="pro-choice"
+                        />
+                        <span className="text-center block">Pro-Choice</span>
+                      </label>
+                      <label
+                        className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          preferences.abortionStance === "pro-life"
+                            ? "border-pastel-blue bg-pastel-blue/10 text-pastel-blue font-bold"
+                            : "border-default-300 dark:border-default-200 hover:border-pastel-blue"
+                        }`}
+                      >
+                        <input
+                          checked={preferences.abortionStance === "pro-life"}
+                          className="sr-only"
+                          name="abortionStance"
+                          onChange={handleChange}
+                          type="radio"
+                          value="pro-life"
+                        />
+                        <span className="text-center block">Pro-Life</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
-                <div className="preference-group">
-                  <span className="preference-label">Abortion Stance:</span>
-                  <div className="preference-options">
-                    <label
-                      className={
-                        preferences.abortionStance === "pro-choice"
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="abortionStance"
-                        value="pro-choice"
-                        checked={preferences.abortionStance === "pro-choice"}
-                        onChange={handleChange}
-                      />
-                      Pro-Choice
-                    </label>
-                    <label
-                      className={
-                        preferences.abortionStance === "pro-life"
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="abortionStance"
-                        value="pro-life"
-                        checked={preferences.abortionStance === "pro-life"}
-                        onChange={handleChange}
-                      />
-                      Pro-Life
-                    </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Gun Laws Stance */}
+                  <div>
+                    <span className="block text-sm font-bold text-default-700 dark:text-default-300 mb-3">
+                      Gun Laws Stance:
+                    </span>
+                    <div className="flex gap-3">
+                      <label
+                        className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          preferences.gunStance === "pro-2A"
+                            ? "border-pastel-pink bg-pastel-pink/10 text-pastel-pink font-bold"
+                            : "border-default-300 dark:border-default-200 hover:border-pastel-pink"
+                        }`}
+                      >
+                        <input
+                          checked={preferences.gunStance === "pro-2A"}
+                          className="sr-only"
+                          name="gunStance"
+                          onChange={handleChange}
+                          type="radio"
+                          value="pro-2A"
+                        />
+                        <span className="text-center block">Pro-2A</span>
+                      </label>
+                      <label
+                        className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          preferences.gunStance === "pro-gun-laws"
+                            ? "border-pastel-pink bg-pastel-pink/10 text-pastel-pink font-bold"
+                            : "border-default-300 dark:border-default-200 hover:border-pastel-pink"
+                        }`}
+                      >
+                        <input
+                          checked={preferences.gunStance === "pro-gun-laws"}
+                          className="sr-only"
+                          name="gunStance"
+                          onChange={handleChange}
+                          type="radio"
+                          value="pro-gun-laws"
+                        />
+                        <span className="text-center block">Pro-Gun Laws</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Political Leaning */}
+                  <div>
+                    <span className="block text-sm font-bold text-default-700 dark:text-default-300 mb-3">
+                      Political Leaning:
+                    </span>
+                    <div className="flex gap-3">
+                      <label
+                        className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          preferences.politicalPreference === "red"
+                            ? "border-pastel-red bg-pastel-red/10 text-pastel-red font-bold"
+                            : "border-default-300 dark:border-default-200 hover:border-pastel-red"
+                        }`}
+                      >
+                        <input
+                          checked={preferences.politicalPreference === "red"}
+                          className="sr-only"
+                          name="politicalPreference"
+                          onChange={handleChange}
+                          type="radio"
+                          value="red"
+                        />
+                        <span className="text-center block">Red</span>
+                      </label>
+                      <label
+                        className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          preferences.politicalPreference === "blue"
+                            ? "border-pastel-blue bg-pastel-blue/10 text-pastel-blue font-bold"
+                            : "border-default-300 dark:border-default-200 hover:border-pastel-blue"
+                        }`}
+                      >
+                        <input
+                          checked={preferences.politicalPreference === "blue"}
+                          className="sr-only"
+                          name="politicalPreference"
+                          onChange={handleChange}
+                          type="radio"
+                          value="blue"
+                        />
+                        <span className="text-center block">Blue</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="form-row preferences-row">
-                <div className="preference-group">
-                  <span className="preference-label">Gun Laws Stance:</span>
-                  <div className="preference-options">
-                    <label
-                      className={
-                        preferences.gunStance === "pro-2A" ? "selected" : ""
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="gunStance"
-                        value="pro-2A"
-                        checked={preferences.gunStance === "pro-2A"}
-                        onChange={handleChange}
-                      />
-                      Pro-2A
-                    </label>
-                    <label
-                      className={
-                        preferences.gunStance === "pro-gun-laws"
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="gunStance"
-                        value="pro-gun-laws"
-                        checked={preferences.gunStance === "pro-gun-laws"}
-                        onChange={handleChange}
-                      />
-                      Pro-Gun Laws
-                    </label>
-                  </div>
-                </div>
-
-                <div className="preference-group">
-                  <span className="preference-label">Political Leaning:</span>
-                  <div className="preference-options">
-                    <label
-                      className={
-                        preferences.politicalPreference === "red"
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="politicalPreference"
-                        value="red"
-                        checked={preferences.politicalPreference === "red"}
-                        onChange={handleChange}
-                      />
-                      Red
-                    </label>
-                    <label
-                      className={
-                        preferences.politicalPreference === "blue"
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="politicalPreference"
-                        value="blue"
-                        checked={preferences.politicalPreference === "blue"}
-                        onChange={handleChange}
-                      />
-                      Blue
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="form-row preferences-row">
-                <div className="preference-group">
-                  <span className="preference-label">
+                {/* Population Preference */}
+                <div>
+                  <span className="block text-sm font-bold text-default-700 dark:text-default-300 mb-3">
                     Population Preference:
                   </span>
-                  <div className="preference-options">
+                  <div className="flex gap-3 max-w-md">
                     <label
-                      className={
+                      className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
                         preferences.populationPreference === "small-town"
-                          ? "selected"
-                          : ""
-                      }
+                          ? "border-pastel-orange bg-pastel-orange/10 text-pastel-orange font-bold"
+                          : "border-default-300 dark:border-default-200 hover:border-pastel-orange"
+                      }`}
                     >
                       <input
-                        type="radio"
-                        name="populationPreference"
-                        value="small-town"
                         checked={
                           preferences.populationPreference === "small-town"
                         }
+                        className="sr-only"
+                        name="populationPreference"
                         onChange={handleChange}
+                        type="radio"
+                        value="small-town"
                       />
-                      Small Town
+                      <span className="text-center block">Small Town</span>
                     </label>
                     <label
-                      className={
+                      className={`flex-1 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
                         preferences.populationPreference === "city"
-                          ? "selected"
-                          : ""
-                      }
+                          ? "border-pastel-orange bg-pastel-orange/10 text-pastel-orange font-bold"
+                          : "border-default-300 dark:border-default-200 hover:border-pastel-orange"
+                      }`}
                     >
                       <input
-                        type="radio"
-                        name="populationPreference"
-                        value="city"
                         checked={preferences.populationPreference === "city"}
+                        className="sr-only"
+                        name="populationPreference"
                         onChange={handleChange}
+                        type="radio"
+                        value="city"
                       />
-                      City Life
+                      <span className="text-center block">City Life</span>
                     </label>
                   </div>
                 </div>
               </div>
 
-              <button type="submit" className="submit-button">
+              <button
+                className="w-full mt-8 px-8 py-4 bg-gradient-primary text-white text-lg font-bold rounded-lg hover:opacity-90 transition-all hover:scale-[1.02] shadow-lg"
+                type="submit"
+              >
                 Calculate Moving Impact
               </button>
             </form>

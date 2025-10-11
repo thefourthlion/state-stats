@@ -2,14 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { initFirebase } from "@/firebase";
 import { getAuth, updateProfile } from "firebase/auth";
-import { getCheckoutUrl, getPortalUrl } from "./stripePayment";
-import { getSubscriptionStatus } from "./getPremiumStatus";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Textarea } from "@nextui-org/input";
+import { getCheckoutUrl, getPortalUrl } from "./stripePayment";
+import { getSubscriptionStatus } from "./getPremiumStatus";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { initFirebase } from "@/firebase";
 import "../../../styles/Account.scss";
 
 export default function AccountPage() {
@@ -58,7 +58,7 @@ export default function AccountPage() {
   }, [app, auth.currentUser]);
 
   const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!event.target.files || !event.target.files[0]) return;
     setIsUploadingImage(true);
@@ -137,18 +137,18 @@ export default function AccountPage() {
               <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
             </Avatar>
             <Input
-              type="file"
               accept="image/*"
               className="hidden"
+              disabled={isUploadingImage}
               id="avatar-upload"
               onChange={handleImageUpload}
-              disabled={isUploadingImage}
+              type="file"
             />
             <Button
               color="primary"
-              variant="ghost"
-              onClick={() => document.getElementById("avatar-upload")?.click()}
               disabled={isUploadingImage}
+              onClick={() => document.getElementById("avatar-upload")?.click()}
+              variant="ghost"
             >
               {isUploadingImage ? "Uploading..." : "Change Avatar"}
             </Button>
@@ -157,20 +157,20 @@ export default function AccountPage() {
           {isEditing ? (
             <div className="edit-profile">
               <Input
+                onChange={(e) => setNewUserName(e.target.value)}
                 placeholder="Username"
                 value={newUserName}
-                onChange={(e) => setNewUserName(e.target.value)}
               />
               <Textarea
+                onChange={(e) => setNewBio(e.target.value)}
                 placeholder="Bio"
                 value={newBio}
-                onChange={(e) => setNewBio(e.target.value)}
               />
               <div className="edit-actions">
                 <Button
                   color="primary"
-                  variant="ghost"
                   onClick={handleUpdateProfile}
+                  variant="ghost"
                 >
                   Save
                 </Button>
@@ -188,12 +188,12 @@ export default function AccountPage() {
               <p className="email">{email}</p>
               <p className="bio">{bio || "No bio yet"}</p>
               <Button
+                color="primary"
                 onClick={() => {
                   setIsEditing(true);
                   setNewUserName(userName || "");
                   setNewBio(bio);
                 }}
-                color="primary"
                 variant="ghost"
               >
                 Edit Profile
@@ -205,29 +205,29 @@ export default function AccountPage() {
             <h3>Available Plans</h3>
             <div className="plans-grid">
               <Button
-                onClick={() => handleUpgradeToSubscription("price_basic")}
                 color="primary"
+                onClick={() => handleUpgradeToSubscription("price_basic")}
                 variant="ghost"
               >
                 Basic Plan - $6/month
               </Button>
               <Button
-                onClick={() => handleUpgradeToSubscription("price_premium")}
                 color="primary"
+                onClick={() => handleUpgradeToSubscription("price_premium")}
                 variant="ghost"
               >
                 Premium Plan - $12/month
               </Button>
               <Button
-                onClick={() => handleUpgradeToSubscription("price_extra")}
                 color="primary"
+                onClick={() => handleUpgradeToSubscription("price_extra")}
               >
                 Extra Plan - $18/month
               </Button>
             </div>
             <Button
-              onClick={handleManageSubscription}
               className="red-outline-button"
+              onClick={handleManageSubscription}
             >
               Manage Subscription
             </Button>
