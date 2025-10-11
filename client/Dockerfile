@@ -1,50 +1,34 @@
-# Base image
-FROM node:18-alpine AS base
+# Use the official Node.js LTS image
+FROM node:18-alpine
+
+# Set the working directory inside the container
 WORKDIR /app
 
-# Dependencies stage
-FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine
-RUN apk add --no-cache libc6-compat
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-# Copy package files
-COPY package.json package-lock.json* ./
-RUN npm ci
+# Install dependencies (including dev dependencies needed for build)
+# Use --legacy-peer-deps to bypass react-simple-maps peer dependency conflict
+RUN npm install --legacy-peer-deps
 
-# Builder stage
-FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
+# Copy the .env file first (for build time)
+COPY .env ./
+
+# Copy the rest of your application files
 COPY . .
 
-# Build the application
-ENV NEXT_TELEMETRY_DISABLED 1
+# Build the Next.js app for production
 RUN npm run build
 
-# Runner stage
-FROM base AS runner
-WORKDIR /app
+# Remove dev dependencies after build
+RUN npm prune --production --legacy-peer-deps
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-
-# Set the correct permission for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-# Automatically leverage output traces to reduce image size
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
+# Expose the port your app runs on
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+# Set the PORT environment variable
+ENV PORT=3000
+ENV NODE_ENV=production
 
-CMD ["node", "server.js"]
+# Start the Next.js app in production mode
+CMD ["npm", "start"]

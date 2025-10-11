@@ -1,5 +1,6 @@
 services:
-  state-stats-server:
+  stateanalytica-server:
+    container_name: stateanalytica-server
     build: .
     ports:
       - "3002:3002"
