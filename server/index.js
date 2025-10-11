@@ -9,7 +9,26 @@ const connectDB = require("./config/mongoose");
 require("dotenv").config({ path: "./.env" });
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+
+// Configure CORS to accept specific origins
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://stateanalytica.com'
+    ];
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, 
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 connectDB();
 const LocalStrategy = require("passport-local").Strategy;
 passport.use(new LocalStrategy(User.authenticate()));
