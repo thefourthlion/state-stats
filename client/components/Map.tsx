@@ -175,18 +175,53 @@ const Map = () => {
 
   // Click -> find state in your dataset by either geo.properties.name or postal abbr
   const handleClick = (geo: any) => {
+    console.log("🗺️ Clicked geo:", geo);
+    console.log("📍 Properties:", geo?.properties);
+    console.log("🏛️ States loaded:", states.length);
+    
     const name: string | undefined = geo?.properties?.name;
+    console.log("🔍 Looking for:", name);
+    
     let found: State | undefined = name ? byName.get(name) : undefined;
 
     if (!found) {
       // If the GeoJSON lacks "name" but has a USPS code, try that path.
       const abbr: string | undefined =
         geo?.properties?.postal || geo?.properties?.stusps; // different atlases annotate differently
+      console.log("🔤 Trying abbr:", abbr);
       if (abbr) found = byAbbr.get(abbr);
-      // Last resort: map FIPS to name/abbr if you decide to add that later.
+
+      // Try matching by ID (some atlases use state FIPS codes)
+      if (!found && geo?.id) {
+        console.log("🆔 Trying ID:", geo.id);
+        const matchedState = states.find((s) => {
+          // Try to match by any available identifier
+          return (
+            s.Name === name ||
+            Object.entries(NAME_BY_ABBR).find(
+              ([_abbr, fullName]) => fullName === s.Name,
+            )?.[0] === _abbr
+          );
+        });
+        if (matchedState) found = matchedState;
+      }
     }
 
-    if (found) setSelectedState(found);
+    console.log(found ? `✅ Found: ${found.Name}` : "❌ Not found!");
+    
+    if (found) {
+      setSelectedState(found);
+      // Scroll to the details section smoothly
+      setTimeout(() => {
+        const detailsElement = document.querySelector(".state-details-card");
+        if (detailsElement) {
+          detailsElement.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -202,11 +237,30 @@ const Map = () => {
             {error}
           </div>
         )}
+        
+        {/* Debug Info */}
+        {!loading && !error && (
+          <div className="mb-4 p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg text-sm">
+            <strong>Debug Info:</strong> Loaded {states.length} states | 
+            ByName has {byName.size} entries | 
+            ByAbbr has {byAbbr.size} entries |
+            {selectedState ? ` Selected: ${selectedState.Name}` : ' No state selected'}
+          </div>
+        )}
 
         {!loading && !error && (
           <div className="relative mb-8">
+            {/* Instruction Banner */}
+            {!selectedState && (
+              <div className="text-center mb-6 p-4 bg-pastel-teal/10 border border-pastel-teal/30 rounded-lg">
+                <p className="text-default-700 dark:text-default-300 font-semibold">
+                  👆 Click on any state to view detailed information
+                </p>
+              </div>
+            )}
+
             {/* Map Container */}
-            <div className="w-full max-w-4xl mx-auto relative">
+            <div className="w-full max-w-4xl mx-auto relative bg-default-50 dark:bg-default-100/5 rounded-2xl p-4 border border-default-200 dark:border-default-100">
               <ComposableMap projection="geoAlbersUsa">
                 <Geographies geography={geoStates}>
                   {({ geographies }) =>
@@ -229,13 +283,25 @@ const Map = () => {
                           key={geo.rsmKey}
                           onClick={() => handleClick(geo)}
                           style={{
-                            default: { outline: "none", fill },
-                            hover: {
+                            default: {
+                              fill,
+                              stroke: "#FFFFFF",
+                              strokeWidth: 0.75,
                               outline: "none",
-                              opacity: 0.9,
-                              cursor: "pointer",
                             },
-                            pressed: { outline: "none", opacity: 0.85 },
+                            hover: {
+                              fill,
+                              stroke: "#78BFB8",
+                              strokeWidth: 2,
+                              cursor: "pointer",
+                              outline: "none",
+                            },
+                            pressed: {
+                              fill,
+                              stroke: "#78BFB8",
+                              strokeWidth: 2,
+                              outline: "none",
+                            },
                           }}
                         />
                       );
@@ -277,10 +343,46 @@ const Map = () => {
 
         {/* State Details */}
         {selectedState && (
-          <div className="rounded-2xl bg-default-100 dark:bg-default-50/5 border border-pastel-teal/30 p-8 mt-6 shadow-lg">
-            <h2 className="text-3xl font-black text-center mb-6 text-pastel-teal">
-              {selectedState.Name}
-            </h2>
+          <div className="state-details-card rounded-2xl bg-default-100 dark:bg-default-50/5 border-2 border-pastel-teal p-8 mt-6 shadow-lg animate-in fade-in duration-300">
+            <div className="mb-6">
+              <div className="flex justify-between items-start mb-3">
+                <h2 className="text-3xl font-black text-pastel-teal">
+                  {selectedState.Name}
+                </h2>
+                <button
+                  aria-label="Close details"
+                  className="text-default-500 hover:text-pastel-teal transition-colors p-2 rounded-lg hover:bg-default-200 dark:hover:bg-default-50/10"
+                  onClick={() => setSelectedState(null)}
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 18L18 6M6 6l12 12"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="w-6 h-6 rounded-full border-2 border-default-300"
+                  style={{
+                    backgroundColor: getPoliticalColor(
+                      selectedState.PoliticalLeaning,
+                    ),
+                  }}
+                />
+                <span className="text-lg font-bold text-default-700 dark:text-default-300">
+                  Political Leaning: {selectedState.PoliticalLeaning}
+                </span>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Economic Card */}
               <div className="p-6 rounded-xl bg-default-50 dark:bg-default-100/5 border border-default-200 dark:border-default-100">
@@ -341,12 +443,6 @@ const Map = () => {
                 </h3>
                 <div className="space-y-2 text-sm">
                   <p className="text-default-600 dark:text-default-400">
-                    <span className="font-medium">Political Leaning:</span>{" "}
-                    <strong className="text-foreground">
-                      {selectedState.PoliticalLeaning}
-                    </strong>
-                  </p>
-                  <p className="text-default-600 dark:text-default-400">
                     <span className="font-medium">Abortion Laws:</span>{" "}
                     <strong className="text-foreground">
                       {selectedState.Abortion}
@@ -356,6 +452,15 @@ const Map = () => {
                     <span className="font-medium">Gun Laws:</span>{" "}
                     <strong className="text-foreground">
                       {selectedState.GunLaws}
+                    </strong>
+                  </p>
+                  <p className="text-default-600 dark:text-default-400">
+                    <span className="font-medium">Capital Gains Tax:</span>{" "}
+                    <strong className="text-foreground">
+                      {formatValue(
+                        "CapitalGainsTax",
+                        selectedState.CapitalGainsTax,
+                      )}
                     </strong>
                   </p>
                 </div>

@@ -8,7 +8,6 @@ import {
   NavbarItem,
   NavbarMenuItem,
 } from "@nextui-org/navbar";
-import { Button } from "@nextui-org/button";
 import { Link } from "@nextui-org/link";
 import NextLink from "next/link";
 import clsx from "clsx";
@@ -91,7 +90,7 @@ export const Navbar = () => {
       >
         <NavbarItem className="hidden sm:flex gap-3 items-center">
           <ThemeSwitch />
-          {user ? (
+          {/* {user ? (
             <Button
               className="font-semibold"
               onPress={handleAuthAction}
@@ -108,7 +107,7 @@ export const Navbar = () => {
             >
               Login
             </Button>
-          )}
+          )} */}
         </NavbarItem>
       </NavbarContent>
 
@@ -135,7 +134,7 @@ export const Navbar = () => {
 
           {/* Mobile Auth Button */}
           <NavbarMenuItem>
-            <Button
+            {/* <Button
               className={clsx(
                 "w-full font-semibold mt-4",
                 user
@@ -146,7 +145,7 @@ export const Navbar = () => {
               size="lg"
             >
               {user ? "Logout" : "Login"}
-            </Button>
+            </Button> */}
           </NavbarMenuItem>
         </div>
       </NavbarMenu>
