@@ -2,8 +2,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { feature } from "topojson-client";
-import usTopo from "us-atlas/states-10m.json";
 
 interface State {
   _id: string;
@@ -79,6 +77,60 @@ const NAME_BY_ABBR: Record<string, string> = {
   DC: "District of Columbia",
 };
 
+const FIPS_TO_STATE: Record<string, string> = {
+  "01": "Alabama",
+  "02": "Alaska",
+  "04": "Arizona",
+  "05": "Arkansas",
+  "06": "California",
+  "08": "Colorado",
+  "09": "Connecticut",
+  "10": "Delaware",
+  "11": "District of Columbia",
+  "12": "Florida",
+  "13": "Georgia",
+  "15": "Hawaii",
+  "16": "Idaho",
+  "17": "Illinois",
+  "18": "Indiana",
+  "19": "Iowa",
+  "20": "Kansas",
+  "21": "Kentucky",
+  "22": "Louisiana",
+  "23": "Maine",
+  "24": "Maryland",
+  "25": "Massachusetts",
+  "26": "Michigan",
+  "27": "Minnesota",
+  "28": "Mississippi",
+  "29": "Missouri",
+  "30": "Montana",
+  "31": "Nebraska",
+  "32": "Nevada",
+  "33": "New Hampshire",
+  "34": "New Jersey",
+  "35": "New Mexico",
+  "36": "New York",
+  "37": "North Carolina",
+  "38": "North Dakota",
+  "39": "Ohio",
+  "40": "Oklahoma",
+  "41": "Oregon",
+  "42": "Pennsylvania",
+  "44": "Rhode Island",
+  "45": "South Carolina",
+  "46": "South Dakota",
+  "47": "Tennessee",
+  "48": "Texas",
+  "49": "Utah",
+  "50": "Vermont",
+  "51": "Virginia",
+  "53": "Washington",
+  "54": "West Virginia",
+  "55": "Wisconsin",
+  "56": "Wyoming",
+};
+
 const getPoliticalColor = (leaning: string): string => {
   switch (leaning) {
     case "Dark Blue":
@@ -127,14 +179,8 @@ const Map = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedState, setSelectedState] = useState<State | null>(null);
 
-  // TopoJSON -> GeoJSON
-  const geoStates = useMemo(() => {
-    // usTopo.objects.states contains features with properties: { name, abbr? }
-    // us-atlas states-10m uses FIPS IDs; we'll rely on properties.name for joins.
-    // Some builds don't ship "name" — fallback to mapping by postal abbr via a helper if needed.
-    const geoJson = feature(usTopo as any, (usTopo as any).objects.states);
-    return geoJson ? [geoJson] : [];
-  }, []);
+  // Use TopoJSON from CDN - react-simple-maps will handle fetching and conversion
+  const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
   // Fast lookup by state name (your dataset uses full names)
   const byName = useMemo(() => {
@@ -162,7 +208,9 @@ const Map = () => {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/states/read`,
         );
-        setStates(response.data);
+        // Handle both old and new API response formats
+        const data = response.data.data || response.data;
+        setStates(Array.isArray(data) ? data : []);
         setLoading(false);
       } catch (err) {
         setError("Failed to fetch states data");
@@ -175,39 +223,31 @@ const Map = () => {
 
   // Click -> find state in your dataset by either geo.properties.name or postal abbr
   const handleClick = (geo: any) => {
-    console.log("🗺️ Clicked geo:", geo);
-    console.log("📍 Properties:", geo?.properties);
-    console.log("🏛️ States loaded:", states.length);
+    const nameProps: string | undefined = geo?.properties?.name;
+    const id: string | undefined = geo?.id; // FIPS code
     
-    const name: string | undefined = geo?.properties?.name;
-    console.log("🔍 Looking for:", name);
+    // Try to find name from FIPS code first (most reliable)
+    let name = id ? FIPS_TO_STATE[id] : nameProps;
+    
+    // Fallback to properties name if FIPS lookup failed
+    if (!name && nameProps) name = nameProps;
+
+    console.log("🗺️ Clicked geo:", { id, nameProps, resolvedName: name });
     
     let found: State | undefined = name ? byName.get(name) : undefined;
 
     if (!found) {
-      // If the GeoJSON lacks "name" but has a USPS code, try that path.
+      // Fallback strategies
       const abbr: string | undefined =
-        geo?.properties?.postal || geo?.properties?.stusps; // different atlases annotate differently
-      console.log("🔤 Trying abbr:", abbr);
+        geo?.properties?.postal || geo?.properties?.stusps;
+      
       if (abbr) found = byAbbr.get(abbr);
 
-      // Try matching by ID (some atlases use state FIPS codes)
-      if (!found && geo?.id) {
-        console.log("🆔 Trying ID:", geo.id);
-        const matchedState = states.find((s) => {
-          // Try to match by any available identifier
-          return (
-            s.Name === name ||
-            Object.entries(NAME_BY_ABBR).find(
-              ([_abbr, fullName]) => fullName === s.Name,
-            )?.[0] === _abbr
-          );
-        });
-        if (matchedState) found = matchedState;
+      if (!found && name) {
+        // Fuzzy match attempt
+        found = states.find(s => s.Name.toLowerCase() === name!.toLowerCase());
       }
     }
-
-    console.log(found ? `✅ Found: ${found.Name}` : "❌ Not found!");
     
     if (found) {
       setSelectedState(found);
@@ -221,6 +261,8 @@ const Map = () => {
           });
         }
       }, 100);
+    } else {
+      console.warn(`❌ Could not find state data for: ${name} (ID: ${id})`);
     }
   };
 
@@ -238,16 +280,6 @@ const Map = () => {
           </div>
         )}
         
-        {/* Debug Info */}
-        {!loading && !error && (
-          <div className="mb-4 p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg text-sm">
-            <strong>Debug Info:</strong> Loaded {states.length} states | 
-            ByName has {byName.size} entries | 
-            ByAbbr has {byAbbr.size} entries |
-            {selectedState ? ` Selected: ${selectedState.Name}` : ' No state selected'}
-          </div>
-        )}
-
         {!loading && !error && (
           <div className="relative mb-8">
             {/* Instruction Banner */}
@@ -262,16 +294,19 @@ const Map = () => {
             {/* Map Container */}
             <div className="w-full max-w-4xl mx-auto relative bg-default-50 dark:bg-default-100/5 rounded-2xl p-4 border border-default-200 dark:border-default-100">
               <ComposableMap projection="geoAlbersUsa">
-                <Geographies geography={geoStates}>
-                  {({ geographies }) =>
-                    geographies.map((geo) => {
-                      const name: string | undefined = geo?.properties?.name;
-                      const abbr: string | undefined =
-                        geo?.properties?.postal || geo?.properties?.stusps;
-                      const stateData =
-                        (name && byName.get(name)) ||
-                        (abbr && byAbbr.get(abbr)) ||
-                        null;
+                <Geographies geography={geoUrl}>
+                  {({ geographies }) => {
+                    console.log("📊 Total geographies:", geographies.length);
+                    if (geographies.length > 0) {
+                      console.log("📊 First geo sample:", geographies[0]);
+                    }
+                    
+                    return geographies.map((geo) => {
+                      const id = geo.id;
+                      const name = FIPS_TO_STATE[id] || geo?.properties?.name;
+                      
+                      const stateData = name ? byName.get(name) : null;
+                      const isSelected = selectedState?.Name === name;
 
                       const fill = stateData
                         ? getPoliticalColor(stateData.PoliticalLeaning)
@@ -281,13 +316,19 @@ const Map = () => {
                         <Geography
                           geography={geo}
                           key={geo.rsmKey}
-                          onClick={() => handleClick(geo)}
+                          onClick={() => {
+                            console.log("🖱️ Clicked! Geo object:", geo);
+                            console.log("🖱️ Geo.id:", geo.id);
+                            console.log("🖱️ Geo.properties:", geo.properties);
+                            handleClick(geo);
+                          }}
                           style={{
                             default: {
                               fill,
-                              stroke: "#FFFFFF",
-                              strokeWidth: 0.75,
+                              stroke: isSelected ? "#78BFB8" : "#FFFFFF",
+                              strokeWidth: isSelected ? 2.5 : 0.75,
                               outline: "none",
+                              filter: isSelected ? "brightness(1.1)" : "none",
                             },
                             hover: {
                               fill,
@@ -295,6 +336,7 @@ const Map = () => {
                               strokeWidth: 2,
                               cursor: "pointer",
                               outline: "none",
+                              filter: "brightness(1.1)",
                             },
                             pressed: {
                               fill,
@@ -305,8 +347,8 @@ const Map = () => {
                           }}
                         />
                       );
-                    })
-                  }
+                    });
+                  }}
                 </Geographies>
               </ComposableMap>
             </div>

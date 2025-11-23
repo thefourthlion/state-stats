@@ -66,7 +66,9 @@ const CompareStates = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/states/read`,
       );
-      setStates(response.data);
+      // Handle both old and new API response formats
+      const data = response.data.data || response.data;
+      setStates(data);
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch states data");

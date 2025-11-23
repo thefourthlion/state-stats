@@ -15,6 +15,7 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       'http://localhost:3000',
+      'http://localhost:3001',
       'https://stateanalytica.com'
     ];
     // Allow requests with no origin (like mobile apps or curl requests)
