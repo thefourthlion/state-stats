@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { User, getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -11,9 +11,12 @@ const LOGIN_ROUTE = "/pages/login";
 const ACCOUNT_ROUTE = "/pages/account";
 
 const AuthRouter = (props: any) => {
+  // Initialize Firebase - this should not throw, but handle gracefully
   const app = initFirebase();
   const auth = getAuth(app);
-  const [user, loading] = useAuthState(auth);
+  
+  // Hooks must be called unconditionally
+  const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
   const pathName = usePathname();
 
@@ -42,6 +45,13 @@ const AuthRouter = (props: any) => {
   useEffect(() => {
     redirect(loading, user);
   }, [loading, user, pathName]);
+
+  // Log auth errors but don't block rendering
+  useEffect(() => {
+    if (error) {
+      console.error("Firebase auth error:", error);
+    }
+  }, [error]);
 
   if (loading) {
     return null; // Show a loader or return null while checking auth state

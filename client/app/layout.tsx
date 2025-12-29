@@ -105,6 +105,37 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           type="application/ld+json"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Global error handler to catch browser extension errors
+              window.addEventListener('error', function(event) {
+                // Ignore errors from browser extensions (content.js, checkoutUrls, etc.)
+                if (event.filename && (
+                  event.filename.includes('content.js') ||
+                  event.filename.includes('extension') ||
+                  event.message && event.message.includes('checkoutUrls')
+                )) {
+                  event.preventDefault();
+                  console.warn('Ignored browser extension error:', event.message);
+                  return true;
+                }
+              });
+              
+              // Handle unhandled promise rejections from extensions
+              window.addEventListener('unhandledrejection', function(event) {
+                if (event.reason && (
+                  event.reason.message && event.reason.message.includes('checkoutUrls') ||
+                  event.reason.toString().includes('checkoutUrls')
+                )) {
+                  event.preventDefault();
+                  console.warn('Ignored browser extension promise rejection:', event.reason);
+                  return true;
+                }
+              });
+            `,
+          }}
+        />
       </head>
       <body
         className={clsx(
