@@ -145,18 +145,47 @@ export default function RootLayout({
               (function() {
                 if (document.body) {
                   document.body.style.display = 'block';
+                  document.body.style.visibility = 'visible';
+                  document.body.style.opacity = '1';
                 }
+                // Diagnostic logging
+                console.log('Page loaded, body exists:', !!document.body);
+                console.log('React root exists:', !!document.getElementById('__next'));
+                console.log('Current URL:', window.location.href);
               })();
+              
+              // Check if React has hydrated
+              window.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM Content Loaded');
+                setTimeout(function() {
+                  const root = document.getElementById('__next');
+                  if (!root || root.children.length === 0) {
+                    console.error('React root is empty or missing!');
+                    // Try to show a fallback message
+                    if (document.body) {
+                      document.body.innerHTML = '<div style="padding: 20px; font-family: sans-serif;"><h1>Loading...</h1><p>If this message persists, there may be a JavaScript error. Check the console.</p></div>' + document.body.innerHTML;
+                    }
+                  } else {
+                    console.log('React root has content:', root.children.length, 'children');
+                  }
+                }, 2000);
+              });
             `,
           }}
         />
       </head>
       <body
         className={clsx(
-          "min-h-screen bg-background font-sans antialiased",
+          "min-h-screen bg-background text-foreground font-sans antialiased",
           fontSans.variable,
         )}
       >
+        <noscript>
+          <div style={{ padding: "20px", textAlign: "center", fontFamily: "sans-serif" }}>
+            <h1>JavaScript Required</h1>
+            <p>This application requires JavaScript to function. Please enable JavaScript in your browser.</p>
+          </div>
+        </noscript>
         <Providers>
           <AuthRouter>
             <div className="relative flex flex-col h-screen">
