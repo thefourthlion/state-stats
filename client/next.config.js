@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
+    // Trust Cloudflare proxy headers
+    experimental: {
+        serverActions: {
+            bodySizeLimit: '2mb',
+        },
+    },
     // Handle headers for Cloudflare proxy
     async headers() {
         return [
@@ -13,7 +19,7 @@ const nextConfig = {
                     },
                     {
                         key: 'X-Frame-Options',
-                        value: 'DENY',
+                        value: 'SAMEORIGIN',
                     },
                     {
                         key: 'X-XSS-Protection',
@@ -31,6 +37,9 @@ const nextConfig = {
     async rewrites() {
         return [];
     },
+    // Configure for Cloudflare proxy
+    poweredByHeader: false,
+    compress: true,
 };
 
 module.exports = nextConfig;

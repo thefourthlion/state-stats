@@ -114,6 +114,8 @@ export default function RootLayout({
                 if (event.filename && (
                   event.filename.includes('content.js') ||
                   event.filename.includes('extension') ||
+                  event.filename.includes('serviceWorker.js') ||
+                  event.filename.includes('background.js') ||
                   event.message && event.message.includes('checkoutUrls')
                 )) {
                   event.preventDefault();
@@ -125,7 +127,12 @@ export default function RootLayout({
               // Handle unhandled promise rejections from extensions
               window.addEventListener('unhandledrejection', function(event) {
                 if (event.reason && (
-                  event.reason.message && event.reason.message.includes('checkoutUrls') ||
+                  event.reason.message && (
+                    event.reason.message.includes('checkoutUrls') ||
+                    event.reason.message.includes('Frame with ID') ||
+                    event.reason.message.includes('Receiving end does not exist') ||
+                    event.reason.message.includes('No tab with id')
+                  ) ||
                   event.reason.toString().includes('checkoutUrls')
                 )) {
                   event.preventDefault();
@@ -133,6 +140,13 @@ export default function RootLayout({
                   return true;
                 }
               });
+              
+              // Ensure page is visible even if there are errors
+              (function() {
+                if (document.body) {
+                  document.body.style.display = 'block';
+                }
+              })();
             `,
           }}
         />
