@@ -1,11 +1,32 @@
-# Allow all crawlers
+# Robots.txt for State Analytica
+# https://stateanalytica.com
+
+# Allow all search engine crawlers
 User-agent: *
 Allow: /
+Allow: /pages/comparestates
+Allow: /pages/statedata
+Allow: /pages/movingcalculator
+Allow: /pages/map
 
-# Disallow authentication pages
+# Disallow authentication and account pages
 Disallow: /pages/login
 Disallow: /pages/register
 Disallow: /pages/account
+Disallow: /api/
+
+# Allow specific search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 0
 
 # Sitemap location
 Sitemap: https://stateanalytica.com/sitemap.xml

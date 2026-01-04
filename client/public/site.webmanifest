@@ -1,7 +1,7 @@
 {
-  "name": "State Analytica",
+  "name": "State Analytica - Compare US States",
   "short_name": "StateAnalytica",
-  "description": "Compare US states for moving, taxation, cost of living, and political factors",
+  "description": "Compare all 50 US states with comprehensive data on taxes, cost of living, politics, education, crime rates, and demographics. Free interactive tools to help you make smarter relocation decisions.",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -13,6 +13,10 @@
   "background_color": "#ffffff",
   "display": "standalone",
   "start_url": "/",
-  "scope": "/"
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "categories": ["reference", "utilities", "productivity"],
+  "lang": "en-US",
+  "dir": "ltr"
 }
 

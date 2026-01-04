@@ -58,11 +58,21 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
+  verification: {
+    // Add your verification codes here when available
+    // google: "YOUR_GOOGLE_VERIFICATION_CODE",
+    // yandex: "YOUR_YANDEX_VERIFICATION_CODE",
+    // yahoo: "YOUR_YAHOO_VERIFICATION_CODE",
+  },
+  category: "Reference",
 };
 
 export const viewport: Viewport = {
@@ -77,16 +87,29 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const jsonLd = {
+  // Comprehensive structured data for SEO
+  const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: siteConfig.seo.openGraph.siteName,
+    alternateName: "State Analytica",
     description: siteConfig.description,
     url: siteConfig.url,
+    inLanguage: "en-US",
     author: {
       "@type": "Person",
       name: siteConfig.author.name,
       url: siteConfig.author.website,
+      sameAs: [
+        siteConfig.links.twitter,
+        siteConfig.links.linkedin,
+        siteConfig.links.github,
+      ],
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.seo.openGraph.siteName,
+      url: siteConfig.url,
     },
     potentialAction: {
       "@type": "SearchAction",
@@ -98,13 +121,67 @@ export default function RootLayout({
     },
   };
 
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.seo.openGraph.siteName,
+    url: siteConfig.url,
+    logo: `${siteConfig.url}/og-image.png`,
+    description: siteConfig.description,
+    sameAs: [
+      siteConfig.links.twitter,
+      siteConfig.links.linkedin,
+      siteConfig.links.github,
+    ],
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: siteConfig.author.email,
+      contactType: "Customer Service",
+    },
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteConfig.url,
+      },
+    ],
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Primary structured data */}
         <script
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
           type="application/ld+json"
         />
+        <script
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          type="application/ld+json"
+        />
+        <script
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+          type="application/ld+json"
+        />
+        
+        {/* Additional SEO meta tags */}
+        <meta name="geo.region" content="US" />
+        <meta name="geo.placename" content="United States" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+        
+        {/* Verification placeholders - add your actual verification codes */}
+        {/* <meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_CODE" /> */}
+        {/* <meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" /> */}
+        {/* <meta name="yandex-verification" content="YOUR_YANDEX_VERIFICATION_CODE" /> */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
