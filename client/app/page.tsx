@@ -67,6 +67,7 @@ export const metadata: Metadata = {
     canonical: "https://stateanalytica.com",
   },
   other: {
+    "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
   },

@@ -185,7 +185,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Global error handler to catch browser extension errors
+              // Global error handler to catch browser extension errors - completely silent
               window.addEventListener('error', function(event) {
                 // Ignore errors from browser extensions (content.js, checkoutUrls, etc.)
                 if (event.filename && (
@@ -193,27 +193,33 @@ export default function RootLayout({
                   event.filename.includes('extension') ||
                   event.filename.includes('serviceWorker.js') ||
                   event.filename.includes('background.js') ||
-                  event.message && event.message.includes('checkoutUrls')
+                  event.filename.includes('chrome-extension') ||
+                  event.filename.includes('moz-extension') ||
+                  event.message && (
+                    event.message.includes('checkoutUrls') ||
+                    event.message.includes('Frame with ID') ||
+                    event.message.includes('Receiving end does not exist') ||
+                    event.message.includes('No tab with id')
+                  )
                 )) {
                   event.preventDefault();
-                  console.warn('Ignored browser extension error:', event.message);
+                  event.stopPropagation();
                   return true;
                 }
-              });
+              }, true);
               
-              // Handle unhandled promise rejections from extensions
+              // Handle unhandled promise rejections from extensions - completely silent
               window.addEventListener('unhandledrejection', function(event) {
                 if (event.reason && (
-                  event.reason.message && (
+                  (event.reason.message && (
                     event.reason.message.includes('checkoutUrls') ||
                     event.reason.message.includes('Frame with ID') ||
                     event.reason.message.includes('Receiving end does not exist') ||
                     event.reason.message.includes('No tab with id')
-                  ) ||
+                  )) ||
                   event.reason.toString().includes('checkoutUrls')
                 )) {
                   event.preventDefault();
-                  console.warn('Ignored browser extension promise rejection:', event.reason);
                   return true;
                 }
               });
@@ -225,28 +231,7 @@ export default function RootLayout({
                   document.body.style.visibility = 'visible';
                   document.body.style.opacity = '1';
                 }
-                // Diagnostic logging
-                console.log('Page loaded, body exists:', !!document.body);
-                console.log('React root exists:', !!document.getElementById('__next'));
-                console.log('Current URL:', window.location.href);
               })();
-              
-              // Check if React has hydrated
-              window.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM Content Loaded');
-                setTimeout(function() {
-                  const root = document.getElementById('__next');
-                  if (!root || root.children.length === 0) {
-                    console.error('React root is empty or missing!');
-                    // Try to show a fallback message
-                    if (document.body) {
-                      document.body.innerHTML = '<div style="padding: 20px; font-family: sans-serif;"><h1>Loading...</h1><p>If this message persists, there may be a JavaScript error. Check the console.</p></div>' + document.body.innerHTML;
-                    }
-                  } else {
-                    console.log('React root has content:', root.children.length, 'children');
-                  }
-                }, 2000);
-              });
             `,
           }}
         />

@@ -7,6 +7,10 @@ const nextConfig = {
             bodySizeLimit: '2mb',
         },
     },
+    // Ensure metadata is generated during build
+    generateBuildId: async () => {
+        return 'build-' + Date.now();
+    },
     // Handle headers for Cloudflare proxy
     async headers() {
         return [
@@ -40,6 +44,8 @@ const nextConfig = {
     // Configure for Cloudflare proxy
     poweredByHeader: false,
     compress: true,
+    // Ensure proper metadata generation
+    reactStrictMode: true,
 };
 
 module.exports = nextConfig;

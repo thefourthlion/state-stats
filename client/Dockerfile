@@ -11,11 +11,15 @@ COPY package*.json ./
 # Use --legacy-peer-deps to bypass react-simple-maps peer dependency conflict
 RUN npm install --legacy-peer-deps
 
-# Copy the .env file first (for build time)
-COPY .env ./
+# Copy the .env file first (for build time) if it exists
+COPY .env* ./
 
 # Copy the rest of your application files
 COPY . .
+
+# Set build-time environment variables for metadata generation
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 
 # Build the Next.js app for production
 RUN npm run build
