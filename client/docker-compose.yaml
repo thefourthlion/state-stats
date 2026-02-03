@@ -1,3 +1,5 @@
+name: state-stats-client
+
 services:
   stateanalytica-client:
     container_name: stateanalytica-client

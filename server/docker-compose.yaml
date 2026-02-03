@@ -1,3 +1,5 @@
+name: state-stats-server
+
 services:
   stateanalytica-server:
     container_name: stateanalytica-server
